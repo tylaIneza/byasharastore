@@ -7,7 +7,6 @@
 set -e
 
 APP_DIR="/var/www/byashara-store"
-PM2_APP="byashara-store"
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
@@ -33,13 +32,7 @@ npx prisma migrate deploy
 echo "▶ Building Next.js application..."
 npm run build
 
-echo "▶ Restarting PM2..."
-pm2 reload ecosystem.config.js --update-env || pm2 start ecosystem.config.js
-
-pm2 save
-
 echo ""
 echo "✅ Deployment complete!"
 echo "🌐 App running on port 3000"
 echo ""
-pm2 status
