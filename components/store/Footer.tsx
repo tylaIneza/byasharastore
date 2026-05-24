@@ -108,8 +108,8 @@ export default function Footer() {
         <div className="border-t border-slate-800 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
           <p>© {year} BYASHARA STORE. {t.footer.rights}</p>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-white transition-colors">{t.footer.privacyPolicy}</a>
-            <a href="#" className="hover:text-white transition-colors">{t.footer.termsOfService}</a>
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">{t.footer.privacyPolicy}</Link>
+            <Link href="/terms-of-service" className="hover:text-white transition-colors">{t.footer.termsOfService}</Link>
           </div>
         </div>
       </div>
