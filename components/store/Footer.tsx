@@ -105,21 +105,17 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Trust Seal */}
-        <div className="border-t border-slate-800 mt-12 pt-8 pb-2 flex justify-center">
+        {/* Copyright */}
+        <div className="border-t border-slate-800 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+          <p>© {year} BYASHARA STORE. {t.footer.rights}</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/dbi-ecommerce-trust-seal.png"
             alt="DBI Rwanda E-Commerce Trust Seal"
-            width={100}
-            height={100}
+            width={72}
+            height={72}
             className="opacity-90 hover:opacity-100 transition-opacity"
           />
-        </div>
-
-        {/* Copyright */}
-        <div className="border-t border-slate-800 mt-6 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <p>© {year} BYASHARA STORE. {t.footer.rights}</p>
           <div className="flex gap-4">
             <Link href="/privacy-policy" className="hover:text-white transition-colors">{t.footer.privacyPolicy}</Link>
             <Link href="/terms-of-service" className="hover:text-white transition-colors">{t.footer.termsOfService}</Link>
