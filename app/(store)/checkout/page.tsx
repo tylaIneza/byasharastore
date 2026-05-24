@@ -595,7 +595,7 @@ export default function CheckoutPage() {
                       </div>
                       <div className="flex justify-between text-slate-500 dark:text-slate-400">
                         <span>Rate</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">1,000 RWF / 10 km</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">1,500 RWF / 10 km</span>
                       </div>
                     </div>
                   )}
