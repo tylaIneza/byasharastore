@@ -28,6 +28,13 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const { id } = await params;
 
   try {
+    const productCount = await prisma.product.count({ where: { categoryId: id } });
+    if (productCount > 0) {
+      return NextResponse.json(
+        { success: false, error: `Cannot delete: ${productCount} product${productCount > 1 ? "s" : ""} use this category. Reassign them first.` },
+        { status: 409 }
+      );
+    }
     await prisma.category.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch {
