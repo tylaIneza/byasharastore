@@ -1,35 +1,21 @@
 "use client";
 import { motion } from "framer-motion";
 import { Truck, Shield, TrendingDown, Headphones } from "lucide-react";
+import { useLanguageStore } from "@/store/language";
 
-const FEATURES = [
-  {
-    icon: TrendingDown,
-    color: "#2563EB",
-    title: "Wholesale Pricing",
-    desc: "Tiered bulk pricing — the more you order, the more you save. Minimum order quantities designed for retailers.",
-  },
-  {
-    icon: Truck,
-    color: "#10B981",
-    title: "Fast Delivery",
-    desc: "Rwanda & Eastern DRC covered. Same-day processing, next-day delivery to Kigali. Goma & Bukavu delivered within 48h.",
-  },
-  {
-    icon: Shield,
-    color: "#FF6B00",
-    title: "Verified Products",
-    desc: "Every product is sourced from verified suppliers and inspected before listing. 100% authentic guarantee.",
-  },
-  {
-    icon: Headphones,
-    color: "#7C3AED",
-    title: "Dedicated Support",
-    desc: "Real B2B support for wholesale buyers. Our team handles bulk inquiries, returns and after-sales service.",
-  },
-];
+const ICONS = [TrendingDown, Truck, Shield, Headphones];
+const COLORS = ["#2563EB", "#10B981", "#FF6B00", "#7C3AED"];
 
 export default function WhyByashara() {
+  const { t } = useLanguageStore();
+
+  const features = [
+    { icon: ICONS[0], color: COLORS[0], title: t.why.bulk.title, desc: t.why.bulk.desc },
+    { icon: ICONS[1], color: COLORS[1], title: t.why.fast.title, desc: t.why.fast.desc },
+    { icon: ICONS[2], color: COLORS[2], title: t.why.quality.title, desc: t.why.quality.desc },
+    { icon: ICONS[3], color: COLORS[3], title: t.why.support.title, desc: t.why.support.desc },
+  ];
+
   return (
     <section className="py-24 bg-white dark:bg-slate-950 overflow-hidden">
       <div className="container-base">
@@ -37,14 +23,12 @@ export default function WhyByashara() {
           <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-[#2563EB]/10 text-[#2563EB] uppercase tracking-wider mb-4">
             Why Choose Us
           </span>
-          <h2 className="section-title text-slate-900 dark:text-white mb-4">Why Choose BYASHARA?</h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
-            Built for wholesale buyers across East Africa. We make bulk electronics purchasing simple, reliable and affordable.
-          </p>
+          <h2 className="section-title text-slate-900 dark:text-white mb-4">{t.why.title}</h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto">{t.why.subtitle}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FEATURES.map((feature, i) => {
+          {features.map((feature, i) => {
             const Icon = feature.icon;
             return (
               <motion.div

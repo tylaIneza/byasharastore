@@ -1,12 +1,17 @@
+"use client";
 import Link from "next/link";
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { useLanguageStore } from "@/store/language";
 
 export default function Footer() {
+  const { t } = useLanguageStore();
   const year = new Date().getFullYear();
+
   return (
     <footer className="bg-[#0F172A] text-slate-400">
       <div className="container-base py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+
           {/* Brand */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2 mb-4">
@@ -17,9 +22,7 @@ export default function Footer() {
                 BY<span className="text-[#60A5FA]">ASHARA</span>
               </span>
             </div>
-            <p className="text-sm leading-relaxed mb-5">
-              Rwanda & Eastern DRC's trusted wholesale electronics supplier. Best prices, verified products, fast delivery.
-            </p>
+            <p className="text-sm leading-relaxed mb-5">{t.footer.tagline}</p>
             <div className="flex gap-3">
               {[
                 { icon: Facebook, href: "#" },
@@ -40,13 +43,13 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
+            <h3 className="text-white font-semibold mb-4">{t.footer.quickLinks}</h3>
             <ul className="space-y-2.5 text-sm">
               {[
-                { label: "Home", href: "/" },
-                { label: "Products", href: "/products" },
-                { label: "Cart", href: "/cart" },
-                { label: "Checkout", href: "/checkout" },
+                { label: t.nav.home, href: "/" },
+                { label: t.nav.products, href: "/products" },
+                { label: t.nav.cart, href: "/cart" },
+                { label: t.checkout.title, href: "/checkout" },
               ].map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="hover:text-[#60A5FA] transition-colors">
@@ -59,24 +62,22 @@ export default function Footer() {
 
           {/* Delivery Info */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Delivery Info</h3>
-            <p className="text-sm leading-relaxed mb-3">
-              Delivery fee is calculated by distance from our nearest branch. Orders confirmed within 24 hours.
-            </p>
+            <h3 className="text-white font-semibold mb-4">{t.footer.delivery}</h3>
+            <p className="text-sm leading-relaxed mb-3">{t.footer.deliveryInfo}</p>
             <ul className="space-y-2 text-sm">
-              <li className="text-[#60A5FA] font-semibold">Our branches:</li>
+              <li className="text-[#60A5FA] font-semibold">{t.footer.branches}:</li>
               <li>• Nyabugogo, Kigali</li>
               <li>• Mahoko, Rubavu</li>
-              <li className="mt-2 text-[#60A5FA] font-semibold">Delivery rate:</li>
-              <li>• 1,500 RWF per 10 km</li>
+              <li className="mt-2 text-[#60A5FA] font-semibold">{t.footer.rate}:</li>
+              <li>• 1,500 RWF / 10 km</li>
               <li>• (e.g. 20 km = 3,000 RWF)</li>
-              <li className="text-emerald-400">• Free above 500,000 RWF</li>
+              <li className="text-emerald-400">• {t.footer.freeAbove}</li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Contact Us</h3>
+            <h3 className="text-white font-semibold mb-4">{t.footer.contact}</h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-[#2563EB] mt-0.5 flex-shrink-0" />
@@ -105,10 +106,10 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-800 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-          <p>© {year} BYASHARA STORE. All rights reserved.</p>
+          <p>© {year} BYASHARA STORE. {t.footer.rights}</p>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-white transition-colors">{t.footer.privacyPolicy}</a>
+            <a href="#" className="hover:text-white transition-colors">{t.footer.termsOfService}</a>
           </div>
         </div>
       </div>
