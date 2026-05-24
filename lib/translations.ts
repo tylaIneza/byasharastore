@@ -10,7 +10,7 @@ export const translations = {
       titleAccent: "Wholesale Prices",
       subtitle: "Bulk pricing, fast delivery across Rwanda & Eastern DRC. Order online — no account needed.",
       cta: "Shop Now", secondary: "View Categories",
-      badge2: "Kigali Branch", badge3: "Rubavu Branch",
+      badge2: "HQ — Kigali", badge3: "Rubavu Branch",
       bestDeals: "Best Deals",
     },
     products: {
