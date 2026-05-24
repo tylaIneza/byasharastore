@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { generateOrderNumber } from "@/lib/utils";
-import { sendOrderConfirmationEmail } from "@/lib/mailer";
+import { sendOrderConfirmationEmail, sendAdminOrderNotification } from "@/lib/mailer";
+import { sendWhatsAppOrderNotification } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const orderItemSchema = z.object({
@@ -133,13 +134,35 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Notify admins (email + WhatsApp) — non-fatal
+    try {
+      await sendAdminOrderNotification({
+        orderNumber,
+        customerName,
+        customerPhone: customer.phone,
+        items: items.map((i) => ({ productName: i.productName, quantity: i.quantity, totalPrice: i.totalPrice })),
+        total,
+        deliveryAddress,
+        paymentMethod,
+      });
+    } catch { /* non-fatal */ }
+
+    try {
+      await sendWhatsAppOrderNotification({
+        orderNumber,
+        customerName,
+        customerPhone: customer.phone,
+        total,
+        deliveryAddress,
+        itemCount: items.length,
+      });
+    } catch { /* non-fatal */ }
+
     // Send email confirmation if customer provided email
     if (customer.email) {
       try {
-        await sendOrderConfirmationEmail(customer.email, customer.name, orderNumber, total);
-      } catch {
-        // Non-fatal: don't fail the order if email fails
-      }
+        await sendOrderConfirmationEmail(customer.email, customer.name ?? customer.phone, orderNumber, total);
+      } catch { /* non-fatal */ }
     }
 
     return NextResponse.json({ success: true, data: { orderNumber, orderId: order.id } }, { status: 201 });
