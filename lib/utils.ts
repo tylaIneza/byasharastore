@@ -112,9 +112,9 @@ export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// 1,000 RWF per 10 km bracket (minimum 1,000 RWF)
+// 1,500 RWF per 10 km bracket (minimum 1,500 RWF)
 export function feeFromDistance(km: number): number {
-  return Math.max(1, Math.ceil(km / 10)) * 1000;
+  return Math.max(1, Math.ceil(km / 10)) * 1500;
 }
 
 export interface NearestBranch {
