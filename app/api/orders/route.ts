@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
         deliveryAddress,
         paymentMethod,
       });
-    } catch { /* non-fatal */ }
+    } catch (e) { console.error("Admin email error:", e); }
 
     try {
       await sendWhatsAppOrderNotification({
