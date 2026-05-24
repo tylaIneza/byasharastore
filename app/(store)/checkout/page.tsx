@@ -295,244 +295,227 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8">
-      <div className="container-base">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 py-8 px-4">
+      <div className="max-w-xl mx-auto">
+
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
-          <Link href="/cart" className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+        <div className="flex items-center gap-3 mb-7">
+          <Link href="/cart" className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
             <ArrowLeft className="w-5 h-5 text-slate-500" />
           </Link>
           <div>
             <h1 className="text-2xl font-black text-slate-900 dark:text-white">{t.checkout.title}</h1>
-            <p className="text-sm text-slate-400">Fill in your delivery details</p>
+            <p className="text-sm text-slate-400">{items.length} item{items.length !== 1 ? "s" : ""} · {formatCurrency(total)}</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form */}
-            <div className="lg:col-span-2 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
-              {/* Phone */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                    <Phone className="w-4 h-4 text-[#2563EB]" />
-                  </div>
-                  <h2 className="font-bold text-slate-900 dark:text-white">Phone Number <span className="text-red-500">*</span></h2>
-                </div>
-                <input
-                  type="tel"
-                  placeholder="e.g. +250 788 000 000"
-                  {...register("phone")}
-                  className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 text-base text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition"
-                />
-                {errors.phone && <p className="text-xs text-red-500 mt-1.5">{errors.phone.message}</p>}
+          {/* ── Order Summary ───────────────────────────────── */}
+          <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-800">
+            {/* Gradient banner */}
+            <div className="bg-gradient-to-r from-[#1D4ED8] to-[#2563EB] px-6 py-4 flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-blue-200 uppercase tracking-widest mb-0.5">{t.checkout.orderSummary}</p>
+                <p className="text-2xl font-black text-white">{formatCurrency(total)}</p>
               </div>
-
-              {/* Delivery Address */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-[#FF6B00]" />
-                    </div>
-                    <h2 className="font-bold text-slate-900 dark:text-white">Delivery Address <span className="text-red-500">*</span></h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={useMyLocation}
-                    disabled={locating}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#2563EB]/10 text-[#2563EB] hover:bg-[#2563EB]/20 disabled:opacity-60 transition-colors"
-                  >
-                    {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
-                    {locating ? "Detecting…" : "Use My Location"}
-                  </button>
-                </div>
-                {locError && (
-                  <p className="text-xs text-red-500 mb-3 flex items-center gap-1">
-                    <XCircle className="w-3.5 h-3.5 flex-shrink-0" /> {locError}
-                  </p>
-                )}
-                {gpsCoords && (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-1">
-                    <LocateFixed className="w-3 h-3" /> Location detected — address filled below
-                  </p>
-                )}
-                <textarea
-                  rows={3}
-                  placeholder="e.g. KN 4 Ave, Nyabugogo, Kigali — or describe your location clearly"
-                  {...register("address")}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none transition"
-                />
-                {errors.address && <p className="text-xs text-red-500 mt-1.5">{errors.address.message}</p>}
-              </div>
-
-              {/* Notes */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                    <FileText className="w-4 h-4 text-slate-500" />
-                  </div>
-                  <h2 className="font-bold text-slate-900 dark:text-white">Order Notes <span className="text-slate-400 font-normal text-sm">(optional)</span></h2>
-                </div>
-                <textarea
-                  rows={3}
-                  placeholder="Any special instructions, preferred delivery time, landmark, etc."
-                  {...register("notes")}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none transition"
-                />
-              </div>
-
-              {/* Payment Method */}
-              <div id="payment-section" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6">
-                <div className="flex items-center gap-2 mb-5">
-                  <ShieldCheck className="w-5 h-5 text-[#2563EB]" />
-                  <h2 className="font-bold text-slate-900 dark:text-white">Payment Method</h2>
-                  <span className="text-red-500 text-sm">*</span>
-                </div>
-                {paymentError && (
-                  <p className="text-xs text-red-500 mb-3">Please select a payment method to continue.</p>
-                )}
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { id: "VISA",       label: "Visa",       bg: "#1A1F71", display: <span className="font-black italic text-lg tracking-tight text-white">VISA</span> },
-                    { id: "MASTERCARD", label: "Mastercard", bg: "#fff",    display: <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#EB001B] -mr-2 inline-block"/><span className="w-5 h-5 rounded-full bg-[#F79E1B] inline-block opacity-90"/><span className="ml-2 text-xs font-bold text-slate-700">Mastercard</span></span> },
-                    { id: "MTN_MOMO",   label: "MTN MoMo",   bg: "#FFCC00", display: <span className="font-black text-sm text-black">MTN MoMo</span> },
-                  ].map((method) => (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => { setPaymentMethod(method.id); setPaymentError(false); }}
-                      className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
-                        paymentMethod === method.id
-                          ? "border-[#2563EB] shadow-md scale-[1.02]"
-                          : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                      }`}
-                    >
-                      <div
-                        className="h-10 w-full rounded-lg flex items-center justify-center px-2"
-                        style={{ background: method.bg }}
-                      >
-                        {method.display}
-                      </div>
-                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{method.label}</span>
-                      {paymentMethod === method.id && (
-                        <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#2563EB] flex items-center justify-center">
-                          <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 fill-white"><path d="M10 3L5 8.5 2 5.5"/><path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                {isMobileMoney && (
-                  <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                      {momoLabel} Phone Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="momo-phone"
-                      type="tel"
-                      value={momoPhone}
-                      onChange={(e) => setMomoPhone(e.target.value)}
-                      placeholder="e.g. +250 788 000 000"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] text-sm"
-                      required
-                    />
-                    <p className="text-xs text-slate-400 mt-1.5">
-                      You will receive a payment prompt on this number to confirm {formatCurrency(total)}.
-                    </p>
-                  </div>
-                )}
-                {!isMobileMoney && (
-                  <p className="text-xs text-slate-400 mt-3">Payment will be processed after order confirmation.</p>
-                )}
+              <div className="text-right">
+                <p className="text-xs text-blue-200">{items.length} item{items.length !== 1 ? "s" : ""}</p>
+                {deliveryFee === 0
+                  ? <p className="text-xs font-bold text-emerald-300 mt-0.5">Free delivery</p>
+                  : <p className="text-xs text-blue-200 mt-0.5">+{formatCurrency(deliveryFee)} delivery</p>}
               </div>
             </div>
 
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6 sticky top-24">
-                <h2 className="font-bold text-slate-900 dark:text-white mb-5">{t.checkout.orderSummary}</h2>
-
-                <div className="space-y-3 max-h-[280px] overflow-y-auto mb-4">
-                  {items.map((item) => (
-                    <div key={item.productId} className="flex items-center gap-3">
-                      <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800">
-                        {item.image ? (
-                          <Image src={item.image} alt={item.name} fill className="object-cover" sizes="40px" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-5 h-5 text-slate-300" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{item.name}</p>
-                        <p className="text-xs text-slate-400">× {item.quantity}</p>
-                      </div>
-                      <p className="text-xs font-bold text-slate-900 dark:text-white flex-shrink-0">
-                        {formatCurrency(item.totalPrice)}
-                      </p>
-                    </div>
-                  ))}
+            {/* Items */}
+            <div className="bg-white dark:bg-slate-900 px-5 pt-4 pb-2 space-y-3 max-h-52 overflow-y-auto">
+              {items.map((item) => (
+                <div key={item.productId} className="flex items-center gap-3">
+                  <div className="relative w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-slate-100 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    {item.image
+                      ? <Image src={item.image} alt={item.name} fill className="object-cover" sizes="44px" />
+                      : <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-slate-300" /></div>}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{item.name}</p>
+                    <p className="text-xs text-slate-400">Qty: {item.quantity}</p>
+                  </div>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white flex-shrink-0">{formatCurrency(item.totalPrice)}</p>
                 </div>
+              ))}
+            </div>
 
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-2 text-sm">
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                    <span>{t.cart.subtotal}</span>
-                    <span className="font-medium">{formatCurrency(subtotal)}</span>
+            {/* Totals */}
+            <div className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-5 py-4 space-y-2 text-sm">
+              <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                <span>{t.cart.subtotal}</span>
+                <span className="font-medium text-slate-700 dark:text-slate-300">{formatCurrency(subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                <span>{t.cart.delivery}</span>
+                <span className={`font-medium ${deliveryFee === 0 ? "text-emerald-500" : "text-slate-700 dark:text-slate-300"}`}>
+                  {deliveryFee === 0 ? "Free" : formatCurrency(deliveryFee)}
+                </span>
+              </div>
+              {branchInfo && deliveryFee > 0 && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-xs space-y-1 border border-blue-100 dark:border-blue-800">
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                    <span>Nearest branch</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{branchInfo.branch.label}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                    <span>{t.cart.delivery}</span>
-                    <span className={`font-medium ${deliveryFee === 0 ? "text-emerald-500" : ""}`}>
-                      {deliveryFee === 0 ? "Free" : formatCurrency(deliveryFee)}
-                    </span>
-                  </div>
-                  {branchInfo && deliveryFee > 0 && (
-                    <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-3 text-xs space-y-1">
-                      <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                        <span>Nearest branch</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{branchInfo.branch.label}</span>
-                      </div>
-                      <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                        <span>Distance</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">{branchInfo.distanceKm.toFixed(1)} km</span>
-                      </div>
-                      <div className="flex justify-between text-slate-500 dark:text-slate-400">
-                        <span>Rate</span>
-                        <span className="font-semibold text-slate-700 dark:text-slate-300">1,500 RWF / 10 km</span>
-                      </div>
-                    </div>
-                  )}
-                  <div className="border-t border-slate-100 dark:border-slate-800 pt-2 flex justify-between font-bold text-base text-slate-900 dark:text-white">
-                    <span>{t.cart.total}</span>
-                    <span>{formatCurrency(total)}</span>
+                  <div className="flex justify-between text-slate-500 dark:text-slate-400">
+                    <span>Distance</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">{branchInfo.distanceKm.toFixed(1)} km · 1,500 RWF/10 km</span>
                   </div>
                 </div>
-
-                <Button
-                  type="submit"
-                  fullWidth
-                  size="lg"
-                  loading={placing}
-                  className="mt-5"
-                >
-                  {placing ? t.checkout.placing : t.checkout.placeOrder}
-                </Button>
-
-                <Link href="/cart" className="block mt-3">
-                  <Button variant="secondary" fullWidth>
-                    {t.checkout.continueShopping}
-                  </Button>
-                </Link>
-
-                <p className="text-xs text-slate-400 text-center mt-3">
-                  By placing your order you agree to our terms of service.
-                </p>
+              )}
+              <div className="flex justify-between font-black text-base pt-1 border-t border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white">
+                <span>{t.cart.total}</span>
+                <span className="text-[#2563EB]">{formatCurrency(total)}</span>
               </div>
             </div>
           </div>
+
+          {/* ── Phone ──────────────────────────────────────── */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Phone className="w-3.5 h-3.5 text-[#2563EB]" />
+              </div>
+              <label className="font-bold text-sm text-slate-800 dark:text-slate-200">Phone Number <span className="text-red-500">*</span></label>
+            </div>
+            <input
+              type="tel"
+              placeholder="e.g. +250 788 000 000"
+              {...register("phone")}
+              className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 text-base text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition"
+            />
+            {errors.phone && <p className="text-xs text-red-500 mt-1.5">{errors.phone.message}</p>}
+          </div>
+
+          {/* ── Delivery Address ───────────────────────────── */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                  <MapPin className="w-3.5 h-3.5 text-[#FF6B00]" />
+                </div>
+                <label className="font-bold text-sm text-slate-800 dark:text-slate-200">Delivery Address <span className="text-red-500">*</span></label>
+              </div>
+              <button
+                type="button"
+                onClick={useMyLocation}
+                disabled={locating}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#2563EB]/10 text-[#2563EB] hover:bg-[#2563EB]/20 disabled:opacity-60 transition-colors"
+              >
+                {locating ? <Loader2 className="w-3 h-3 animate-spin" /> : <LocateFixed className="w-3 h-3" />}
+                {locating ? "Detecting…" : "Use My Location"}
+              </button>
+            </div>
+            {locError && <p className="text-xs text-red-500 mb-2 flex items-center gap-1"><XCircle className="w-3 h-3 flex-shrink-0" />{locError}</p>}
+            {gpsCoords && <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-1"><LocateFixed className="w-3 h-3" />Location detected</p>}
+            <textarea
+              rows={3}
+              placeholder="e.g. KN 4 Ave, Nyabugogo, Kigali — or describe your location clearly"
+              {...register("address")}
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none transition"
+            />
+            {errors.address && <p className="text-xs text-red-500 mt-1.5">{errors.address.message}</p>}
+          </div>
+
+          {/* ── Notes ──────────────────────────────────────── */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <FileText className="w-3.5 h-3.5 text-slate-500" />
+              </div>
+              <label className="font-bold text-sm text-slate-800 dark:text-slate-200">Order Notes <span className="text-slate-400 font-normal">(optional)</span></label>
+            </div>
+            <textarea
+              rows={2}
+              placeholder="Special instructions, preferred delivery time, landmark…"
+              {...register("notes")}
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none transition"
+            />
+          </div>
+
+          {/* ── Payment Method ─────────────────────────────── */}
+          <div id="payment-section" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />
+              </div>
+              <label className="font-bold text-sm text-slate-800 dark:text-slate-200">Payment Method <span className="text-red-500">*</span></label>
+            </div>
+            {paymentError && <p className="text-xs text-red-500 mb-3">Please select a payment method to continue.</p>}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { id: "VISA",       label: "Visa",       bg: "#1A1F71", display: <span className="font-black italic text-lg tracking-tight text-white">VISA</span> },
+                { id: "MASTERCARD", label: "Mastercard", bg: "#fff",    display: <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#EB001B] -mr-2 inline-block"/><span className="w-5 h-5 rounded-full bg-[#F79E1B] inline-block opacity-90"/><span className="ml-2 text-xs font-bold text-slate-700">MC</span></span> },
+                { id: "MTN_MOMO",   label: "MTN MoMo",   bg: "#FFCC00", display: <span className="font-black text-sm text-black">MTN MoMo</span> },
+              ].map((method) => (
+                <button
+                  key={method.id}
+                  type="button"
+                  onClick={() => { setPaymentMethod(method.id); setPaymentError(false); }}
+                  className={`relative flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
+                    paymentMethod === method.id
+                      ? "border-[#2563EB] shadow-md bg-blue-50/50 dark:bg-blue-900/10 scale-[1.03]"
+                      : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                  }`}
+                >
+                  <div className="h-9 w-full rounded-lg flex items-center justify-center px-2" style={{ background: method.bg }}>
+                    {method.display}
+                  </div>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{method.label}</span>
+                  {paymentMethod === method.id && (
+                    <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#2563EB] flex items-center justify-center">
+                      <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 fill-white"><path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {isMobileMoney && (
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  MTN MoMo Phone <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="momo-phone"
+                  type="tel"
+                  value={momoPhone}
+                  onChange={(e) => setMomoPhone(e.target.value)}
+                  placeholder="e.g. +250 788 000 000"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] text-sm"
+                  required
+                />
+                <p className="text-xs text-slate-400 mt-1.5">You will receive a prompt to confirm {formatCurrency(total)}.</p>
+              </div>
+            )}
+            {!isMobileMoney && paymentMethod && (
+              <p className="text-xs text-slate-400 mt-3 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Payment processed securely after confirmation.
+              </p>
+            )}
+          </div>
+
+          {/* ── Place Order Button ─────────────────────────── */}
+          <div className="pt-1 space-y-3">
+            <Button type="submit" fullWidth size="lg" loading={placing} className="h-14 text-base font-black shadow-lg shadow-blue-200 dark:shadow-none">
+              {placing ? t.checkout.placing : `${t.checkout.placeOrder} — ${formatCurrency(total)}`}
+            </Button>
+            <Link href="/cart" className="block">
+              <Button variant="secondary" fullWidth>
+                <ArrowLeft className="w-4 h-4" /> {t.checkout.continueShopping}
+              </Button>
+            </Link>
+            <p className="text-xs text-slate-400 text-center pb-4">
+              By placing your order you agree to our{" "}
+              <Link href="/terms-of-service" className="underline hover:text-slate-600">terms of service</Link>.
+            </p>
+          </div>
+
         </form>
       </div>
     </div>
