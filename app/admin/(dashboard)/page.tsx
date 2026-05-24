@@ -69,14 +69,17 @@ async function getDashboardData() {
     }),
     prisma.order.aggregate({ where: { status: { not: "CANCELLED" } }, _sum: { total: true } }),
     prisma.order.count({ where: { createdAt: { gte: startOfToday } } }),
-    prisma.pageView.count(),
-    prisma.pageView.count({ where: { createdAt: { gte: startOfToday } } }),
-    prisma.pageView.count({ where: { createdAt: { gte: startOfLastMonth, lte: endOfLastMonth } } }),
+    prisma.$queryRaw<[{ count: bigint }]>`SELECT COUNT(*) as count FROM page_views`,
+    prisma.$queryRaw<[{ count: bigint }]>`SELECT COUNT(*) as count FROM page_views WHERE createdAt >= ${startOfToday}`,
+    prisma.$queryRaw<[{ count: bigint }]>`SELECT COUNT(*) as count FROM page_views WHERE createdAt >= ${startOfLastMonth} AND createdAt <= ${endOfLastMonth}`,
   ]);
 
   const pct = (c: number, l: number) => l === 0 ? 100 : +((c - l) / l * 100).toFixed(1);
   const currentRev = Number(totalRevenue._sum.total ?? 0);
   const prevRev = Number(lastMonthRevenue._sum.total ?? 0);
+  const totalViewsNum = Number((totalViews as [{ count: bigint }])[0]?.count ?? 0);
+  const todayViewsNum = Number((todayViews as [{ count: bigint }])[0]?.count ?? 0);
+  const lastMonthViewsNum = Number((lastMonthViews as [{ count: bigint }])[0]?.count ?? 0);
 
   return {
     stats: {
@@ -90,9 +93,9 @@ async function getDashboardData() {
       productsChange: 0,
       allTimeRevenue: Number(allTimeRevenue._sum.total ?? 0),
       todayOrders,
-      totalViews,
-      todayViews,
-      viewsChange: pct(totalViews, lastMonthViews),
+      totalViews: totalViewsNum,
+      todayViews: todayViewsNum,
+      viewsChange: pct(totalViewsNum, lastMonthViewsNum),
     },
     recentOrders: recentOrders.map((o) => ({
       id: o.id, orderNumber: o.orderNumber, status: o.status,
