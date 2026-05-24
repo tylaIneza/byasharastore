@@ -5,25 +5,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Package, ArrowLeft, ChevronDown, ShieldCheck, Smartphone, CheckCircle2, XCircle, Loader2, LocateFixed } from "lucide-react";
+import { Package, ArrowLeft, ShieldCheck, Smartphone, CheckCircle2, XCircle, Loader2, LocateFixed, MapPin, Phone, FileText } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useLanguageStore } from "@/store/language";
-import { formatCurrency, calculateDeliveryFee, nearestBranch, CITY_CENTERS } from "@/lib/utils";
+import { formatCurrency, calculateDeliveryFee, nearestBranch } from "@/lib/utils";
 import { checkoutSchema, CheckoutFormData } from "@/lib/validators/order";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Input";
 
 const MOBILE_MONEY_METHODS = ["MTN_MOMO", "AIRTEL_MONEY"];
 type PayStep = "form" | "waiting" | "confirmed" | "failed";
-
-const COUNTRIES = [
-  "Rwanda", "DR Congo (DRC)", "Burundi", "Uganda", "Tanzania", "Kenya", "Other",
-];
-
-const CITIES_BY_COUNTRY: Record<string, string[]> = {
-  "Rwanda": ["Kigali", "Musanze", "Rubavu", "Huye", "Nyagatare", "Muhanga", "Other"],
-  "DR Congo (DRC)": ["Goma", "Bukavu", "Kinshasa", "Lubumbashi", "Butembo", "Other"],
-};
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -44,9 +35,8 @@ export default function CheckoutPage() {
   const [locError, setLocError] = useState("");
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<CheckoutFormData>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { country: "Rwanda", city: "Kigali" },
   });
 
   async function useMyLocation() {
@@ -67,40 +57,11 @@ export default function CheckoutPage() {
           );
           const data = await res.json();
           const addr = data.address ?? {};
-
-          const countryMap: Record<string, string> = {
-            "Rwanda": "Rwanda",
-            "Democratic Republic of the Congo": "DR Congo (DRC)",
-            "Congo-Kinshasa": "DR Congo (DRC)",
-            "Burundi": "Burundi",
-            "Uganda": "Uganda",
-            "Tanzania": "Tanzania",
-            "Kenya": "Kenya",
-          };
-          const detectedCountry = countryMap[addr.country] ?? "Other";
-
-          // Raw city candidates from Nominatim (most specific first)
-          const rawCity =
-            addr.city ?? addr.town ?? addr.village ?? addr.suburb ??
-            addr.county ?? addr.state_district ?? addr.state ?? "";
-
-          // Match against the dropdown options for this country
-          const knownCities = CITIES_BY_COUNTRY[detectedCountry] ?? [];
-          const matchedCity = knownCities.find((c) => {
-            if (c === "Other") return false;
-            const a = c.toLowerCase();
-            const b = rawCity.toLowerCase();
-            return a === b || b.includes(a) || a.includes(b);
-          }) ?? (knownCities.length > 0 ? "Other" : rawCity);
-
           const street =
-            [addr.road, addr.suburb, addr.neighbourhood, addr.quarter]
+            [addr.road, addr.suburb, addr.neighbourhood, addr.quarter, addr.city ?? addr.town ?? addr.village]
               .filter(Boolean)
               .join(", ");
-          const fullAddress = street || data.display_name?.split(",").slice(0, 3).join(", ") || "";
-
-          setValue("country", detectedCountry, { shouldValidate: true });
-          setValue("city", matchedCity, { shouldValidate: true });
+          const fullAddress = street || data.display_name?.split(",").slice(0, 4).join(", ") || "";
           if (fullAddress) setValue("address", fullAddress, { shouldValidate: true });
         } catch {
           setLocError("Location found but address lookup failed. Please check your fields.");
@@ -125,14 +86,11 @@ export default function CheckoutPage() {
     );
   }
 
-  const watchCountry = watch("country");
-  const watchCity = watch("city");
   const subtotal = getSubtotal();
-  const coordsForFee = gpsCoords ?? CITY_CENTERS[(watchCity ?? "").toLowerCase()];
-  const deliveryFee = calculateDeliveryFee(subtotal, watchCity ?? "", watchCountry ?? "", coordsForFee ?? undefined);
+  const deliveryFee = calculateDeliveryFee(subtotal, "Kigali", "Rwanda", gpsCoords ?? undefined);
   const total = subtotal + deliveryFee;
-  const branchInfo = coordsForFee && subtotal < 500000
-    ? nearestBranch(coordsForFee.lat, coordsForFee.lng)
+  const branchInfo = gpsCoords && subtotal < 500000
+    ? nearestBranch(gpsCoords.lat, gpsCoords.lng)
     : null;
 
   useEffect(() => { setMounted(true); }, []);
@@ -152,10 +110,10 @@ export default function CheckoutPage() {
 
   function buildPayload(data: CheckoutFormData) {
     return {
-      customer: { name: data.name, phone: data.phone, email: data.email || undefined, country: data.country, city: data.city, address: data.address },
+      customer: { phone: data.phone, address: data.address, country: "Rwanda", city: "" },
       items: items.map((item) => ({ productId: item.productId, productName: item.name, productSku: item.sku, quantity: item.quantity, unitPrice: item.unitPrice, totalPrice: item.totalPrice })),
       subtotal, deliveryFee, total,
-      deliveryAddress: data.address, city: data.city, country: data.country,
+      deliveryAddress: data.address, city: "", country: "Rwanda",
       notes: data.notes || undefined,
       paymentMethod,
     };
@@ -263,7 +221,6 @@ export default function CheckoutPage() {
     }
   }
 
-  const cities = CITIES_BY_COUNTRY[watchCountry] ?? [];
   const isMobileMoney = MOBILE_MONEY_METHODS.includes(paymentMethod);
   const momoLabel = paymentMethod === "MTN_MOMO" ? "MTN MoMo" : "Airtel Money";
 
@@ -354,125 +311,77 @@ export default function CheckoutPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Customer Info */}
+            <div className="lg:col-span-2 space-y-5">
+
+              {/* Phone */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6">
-                <h2 className="font-bold text-slate-900 dark:text-white mb-5">{t.checkout.customerInfo}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Input
-                    label={t.checkout.fullName}
-                    placeholder={t.checkout.namePlaceholder}
-                    error={errors.name?.message}
-                    required
-                    {...register("name")}
-                  />
-                  <Input
-                    label={t.checkout.phone}
-                    placeholder={t.checkout.phonePlaceholder}
-                    type="tel"
-                    error={errors.phone?.message}
-                    required
-                    {...register("phone")}
-                  />
-                  <div className="sm:col-span-2">
-                    <Input
-                      label={t.checkout.email}
-                      placeholder="you@example.com"
-                      type="email"
-                      error={errors.email?.message}
-                      {...register("email")}
-                    />
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                    <Phone className="w-4 h-4 text-[#2563EB]" />
                   </div>
+                  <h2 className="font-bold text-slate-900 dark:text-white">Phone Number <span className="text-red-500">*</span></h2>
                 </div>
+                <input
+                  type="tel"
+                  placeholder="e.g. +250 788 000 000"
+                  {...register("phone")}
+                  className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 text-base text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition"
+                />
+                {errors.phone && <p className="text-xs text-red-500 mt-1.5">{errors.phone.message}</p>}
               </div>
 
-              {/* Delivery Details */}
+              {/* Delivery Address */}
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6">
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="font-bold text-slate-900 dark:text-white">{t.checkout.deliveryDetails}</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                      <MapPin className="w-4 h-4 text-[#FF6B00]" />
+                    </div>
+                    <h2 className="font-bold text-slate-900 dark:text-white">Delivery Address <span className="text-red-500">*</span></h2>
+                  </div>
                   <button
                     type="button"
                     onClick={useMyLocation}
                     disabled={locating}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#2563EB]/10 text-[#2563EB] hover:bg-[#2563EB]/20 disabled:opacity-60 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-[#2563EB]/10 text-[#2563EB] hover:bg-[#2563EB]/20 disabled:opacity-60 transition-colors"
                   >
-                    {locating
-                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      : <LocateFixed className="w-3.5 h-3.5" />}
+                    {locating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <LocateFixed className="w-3.5 h-3.5" />}
                     {locating ? "Detecting…" : "Use My Location"}
                   </button>
                 </div>
                 {locError && (
-                  <p className="text-xs text-red-500 mb-4 flex items-center gap-1">
+                  <p className="text-xs text-red-500 mb-3 flex items-center gap-1">
                     <XCircle className="w-3.5 h-3.5 flex-shrink-0" /> {locError}
                   </p>
                 )}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Country */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {t.checkout.country} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        {...register("country")}
-                        className="w-full h-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-slate-100 appearance-none focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                      >
-                        {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    </div>
-                    {errors.country && <p className="text-xs text-red-500">{errors.country.message}</p>}
-                  </div>
+                {gpsCoords && (
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-1">
+                    <LocateFixed className="w-3 h-3" /> Location detected — address filled below
+                  </p>
+                )}
+                <textarea
+                  rows={3}
+                  placeholder="e.g. KN 4 Ave, Nyabugogo, Kigali — or describe your location clearly"
+                  {...register("address")}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none transition"
+                />
+                {errors.address && <p className="text-xs text-red-500 mt-1.5">{errors.address.message}</p>}
+              </div>
 
-                  {/* City */}
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                      {t.checkout.city} <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      {cities.length > 0 ? (
-                        <>
-                          <select
-                            {...register("city")}
-                            className="w-full h-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-slate-100 appearance-none focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                          >
-                            {cities.map((c) => <option key={c} value={c}>{c}</option>)}
-                          </select>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                        </>
-                      ) : (
-                        <input
-                          {...register("city")}
-                          placeholder={t.checkout.cityPlaceholder}
-                          className="w-full h-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                        />
-                      )}
-                    </div>
-                    {errors.city && <p className="text-xs text-red-500">{errors.city.message}</p>}
+              {/* Notes */}
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-slate-500" />
                   </div>
-
-                  <div className="sm:col-span-2">
-                    <Textarea
-                      label={t.checkout.address}
-                      placeholder={t.checkout.addressPlaceholder}
-                      error={errors.address?.message}
-                      rows={2}
-                      required
-                      {...register("address")}
-                    />
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <Textarea
-                      label={t.checkout.notes}
-                      placeholder={t.checkout.notesPlaceholder}
-                      error={errors.notes?.message}
-                      rows={2}
-                      {...register("notes")}
-                    />
-                  </div>
+                  <h2 className="font-bold text-slate-900 dark:text-white">Order Notes <span className="text-slate-400 font-normal text-sm">(optional)</span></h2>
                 </div>
+                <textarea
+                  rows={3}
+                  placeholder="Any special instructions, preferred delivery time, landmark, etc."
+                  {...register("notes")}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none transition"
+                />
               </div>
 
               {/* Payment Method */}

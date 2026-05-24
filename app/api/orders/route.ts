@@ -16,11 +16,11 @@ const orderItemSchema = z.object({
 
 const placeOrderSchema = z.object({
   customer: z.object({
-    name: z.string().min(2),
+    name: z.string().optional(),
     phone: z.string().min(9),
     email: z.string().email().optional(),
-    country: z.string(),
-    city: z.string(),
+    country: z.string().optional().default("Rwanda"),
+    city: z.string().optional().default(""),
     address: z.string(),
   }),
   items: z.array(orderItemSchema).min(1),
@@ -28,8 +28,8 @@ const placeOrderSchema = z.object({
   deliveryFee: z.number().min(0),
   total: z.number().min(0),
   deliveryAddress: z.string(),
-  city: z.string(),
-  country: z.string(),
+  city: z.string().optional().default(""),
+  country: z.string().optional().default("Rwanda"),
   notes: z.string().optional(),
   paymentMethod: z.string().min(1),
 });
@@ -52,11 +52,13 @@ export async function POST(req: NextRequest) {
       where: { phone: customer.phone },
     });
 
+    const customerName = customer.name || customer.phone;
+
     if (dbCustomer) {
       dbCustomer = await prisma.customer.update({
         where: { id: dbCustomer.id },
         data: {
-          name: customer.name,
+          name: customerName,
           email: customer.email || dbCustomer.email,
           totalOrders: { increment: 1 },
           totalSpent: { increment: total },
@@ -65,11 +67,11 @@ export async function POST(req: NextRequest) {
     } else {
       dbCustomer = await prisma.customer.create({
         data: {
-          name: customer.name,
+          name: customerName,
           phone: customer.phone,
           email: customer.email,
-          country: customer.country,
-          city: customer.city,
+          country: customer.country ?? "Rwanda",
+          city: customer.city ?? "",
           address: customer.address,
           totalOrders: 1,
           totalSpent: total,
@@ -124,7 +126,7 @@ export async function POST(req: NextRequest) {
     await prisma.notification.create({
       data: {
         title: "New Order Received",
-        message: `Order ${orderNumber} from ${customer.name} — ${new Intl.NumberFormat("en").format(total)} RWF`,
+        message: `Order ${orderNumber} from ${customerName} — ${new Intl.NumberFormat("en").format(total)} RWF`,
         type: "ORDER",
         link: `/admin/orders`,
         metadata: JSON.stringify({ orderNumber, total, customerName: customer.name }),
