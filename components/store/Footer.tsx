@@ -109,32 +109,26 @@ export default function Footer() {
         <div className="border-t border-slate-800 mt-12 pt-8 pb-2">
           <p className="text-[10px] text-slate-600 text-center uppercase tracking-[0.2em] mb-5">Certified &amp; Trusted</p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
-            <a
-              href="https://dbi.rw/certification-2/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 bg-slate-800/60 border border-slate-700 hover:border-[#2563EB] rounded-xl px-4 py-3 transition-all duration-200 group"
-            >
+            <div className="flex items-center gap-3 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3">
               {/* DBI Logo */}
               <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center flex-shrink-0 p-1">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://dbi.rw/wp-content/uploads/2022/07/DBI-Amended-03.png"
-                  alt="DBI Rwanda"
+                  alt="DBI Rwanda E-Commerce Certified"
                   width={28}
                   height={28}
                   className="object-contain"
                 />
               </div>
               <div className="leading-tight">
-                <p className="text-white text-xs font-bold group-hover:text-[#60A5FA] transition-colors">DBI Rwanda</p>
+                <p className="text-white text-xs font-bold">DBI Rwanda</p>
                 <p className="text-[10px] text-slate-400">E-Commerce Certified</p>
               </div>
-              {/* Shield checkmark */}
               <svg className="w-4 h-4 text-emerald-400 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-            </a>
+            </div>
           </div>
         </div>
 
