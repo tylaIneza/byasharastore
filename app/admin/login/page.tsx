@@ -135,7 +135,7 @@ export default function AdminLoginPage() {
                 <Input
                   label="Email Address"
                   type="email"
-                  placeholder="admin@byashara.rw"
+                  placeholder="admin@byashara.com"
                   error={emailForm.formState.errors.email?.message}
                   required
                   className="bg-[#0f172a] border-slate-700 text-white placeholder:text-slate-600"

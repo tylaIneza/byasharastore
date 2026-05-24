@@ -110,7 +110,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3">7. Inspection and Acceptance of Goods</h2>
             <p>
-              Upon delivery, the Buyer must inspect goods immediately. Any visible damage, shortfall in quantity, or wrong items must be reported to us <strong>within 24 hours of delivery</strong> by contacting +250 782 545 277 or <a href="mailto:info@byashara.rw" className="text-[#2563EB] hover:underline">info@byashara.rw</a>.
+              Upon delivery, the Buyer must inspect goods immediately. Any visible damage, shortfall in quantity, or wrong items must be reported to us <strong>within 24 hours of delivery</strong> by contacting +250 782 545 277 or <a href="mailto:info@byashara.com" className="text-[#2563EB] hover:underline">info@byashara.com</a>.
             </p>
             <p className="mt-2">Failure to report within 24 hours constitutes acceptance of the goods as delivered.</p>
           </section>
@@ -218,7 +218,7 @@ export default function TermsOfServicePage() {
             <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-1 text-sm">
               <p><strong className="text-slate-900 dark:text-white">BYASHARA STORE</strong></p>
               <p>Nyabugogo, Kigali, Rwanda</p>
-              <p>Email: <a href="mailto:info@byashara.rw" className="text-[#2563EB] hover:underline">info@byashara.rw</a></p>
+              <p>Email: <a href="mailto:info@byashara.com" className="text-[#2563EB] hover:underline">info@byashara.com</a></p>
               <p>Phone: +250 782 545 277</p>
             </div>
           </section>

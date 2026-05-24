@@ -129,7 +129,7 @@ async function main() {
     { key: "site_name", value: "BYASHARA STORE", label: "Site Name", type: "text", group: "general" },
     { key: "site_tagline", value: "Wholesale Electronics Rwanda & DRC", label: "Site Tagline", type: "text", group: "general" },
     { key: "contact_phone", value: "+250 788 000 000", label: "Contact Phone", type: "text", group: "contact" },
-    { key: "contact_email", value: "info@byashara.rw", label: "Contact Email", type: "email", group: "contact" },
+    { key: "contact_email", value: "info@byashara.com", label: "Contact Email", type: "email", group: "contact" },
     { key: "delivery_kigali", value: "2000", label: "Delivery Fee Kigali", type: "number", group: "delivery" },
     { key: "delivery_rwanda", value: "5000", label: "Delivery Fee Rwanda", type: "number", group: "delivery" },
     { key: "delivery_drc", value: "10000", label: "Delivery Fee DRC", type: "number", group: "delivery" },

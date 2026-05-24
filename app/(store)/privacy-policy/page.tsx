@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
               <strong>BYASHARA STORE</strong> (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) is a wholesale electronics supplier registered and operating in Rwanda. Our principal place of business is at Nyabugogo, Kigali, Rwanda. We also operate a branch in Rubavu, Western Province.
             </p>
             <p className="mt-2">
-              For questions about this policy or your personal data, contact our Data Protection Officer at: <a href="mailto:info@byashara.rw" className="text-[#2563EB] hover:underline">info@byashara.rw</a> or <strong>+250 782 545 277</strong>.
+              For questions about this policy or your personal data, contact our Data Protection Officer at: <a href="mailto:info@byashara.com" className="text-[#2563EB] hover:underline">info@byashara.com</a> or <strong>+250 782 545 277</strong>.
             </p>
           </section>
 
@@ -129,7 +129,7 @@ export default function PrivacyPolicyPage() {
               <li><strong>Right to object:</strong> Object to processing based on legitimate interests.</li>
               <li><strong>Right to withdraw consent:</strong> Withdraw consent at any time where processing is based on consent.</li>
             </ul>
-            <p className="mt-2">To exercise any of these rights, contact us at <a href="mailto:info@byashara.rw" className="text-[#2563EB] hover:underline">info@byashara.rw</a>. We will respond within <strong>30 days</strong> as required by law.</p>
+            <p className="mt-2">To exercise any of these rights, contact us at <a href="mailto:info@byashara.com" className="text-[#2563EB] hover:underline">info@byashara.com</a>. We will respond within <strong>30 days</strong> as required by law.</p>
           </section>
 
           <section>
@@ -173,7 +173,7 @@ export default function PrivacyPolicyPage() {
             <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 space-y-1 text-sm">
               <p><strong className="text-slate-900 dark:text-white">BYASHARA STORE</strong></p>
               <p>Nyabugogo, Kigali, Rwanda</p>
-              <p>Email: <a href="mailto:info@byashara.rw" className="text-[#2563EB] hover:underline">info@byashara.rw</a></p>
+              <p>Email: <a href="mailto:info@byashara.com" className="text-[#2563EB] hover:underline">info@byashara.com</a></p>
               <p>Phone: +250 782 545 277</p>
             </div>
           </section>

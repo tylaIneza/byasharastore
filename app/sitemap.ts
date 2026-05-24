@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://byashara.rw";
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://byashara.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let products: { slug: string; updatedAt: Date }[] = [];

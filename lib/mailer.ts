@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendOTPEmail(email: string, otp: string, name?: string): Promise<void> {
-  const from = process.env.SMTP_FROM ?? "BYASHARA STORE <noreply@byashara.rw>";
+  const from = process.env.SMTP_FROM ?? "BYASHARA STORE <noreply@byashara.com>";
   await transporter.sendMail({
     from,
     to: email,
@@ -45,7 +45,7 @@ export async function sendOrderConfirmationEmail(
   orderNumber: string,
   total: number
 ): Promise<void> {
-  const from = process.env.SMTP_FROM ?? "BYASHARA STORE <noreply@byashara.rw>";
+  const from = process.env.SMTP_FROM ?? "BYASHARA STORE <noreply@byashara.com>";
   await transporter.sendMail({
     from,
     to: email,
