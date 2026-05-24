@@ -271,6 +271,15 @@ model SiteSetting {
   @@map("site_settings")
 }
 
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("page_views")
+}
+
 enum UserRole {
   SUPER_ADMIN
   ADMIN

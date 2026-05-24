@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, Eye } from "lucide-react";
 import { formatCurrency, formatNumber } from "@/lib/utils";
 
 interface Stats {
@@ -14,6 +14,9 @@ interface Stats {
   productsChange: number;
   allTimeRevenue: number;
   todayOrders: number;
+  totalViews: number;
+  todayViews: number;
+  viewsChange: number;
 }
 
 interface Props { stats: Stats }
@@ -71,11 +74,24 @@ const CARDS = [
     format: (v: number) => formatNumber(v),
     changeKey: "productsChange" as const,
   },
+  {
+    key: "totalViews" as const,
+    label: "Site Visits",
+    subLabel: (s: Stats) => `${formatNumber(s.todayViews)} visits today`,
+    icon: Eye,
+    gradient: "from-pink-50 to-white dark:from-pink-950/30 dark:to-slate-900",
+    borderColor: "border-l-pink-500",
+    iconBg: "bg-pink-100 dark:bg-pink-900/40",
+    iconColor: "text-pink-600 dark:text-pink-400",
+    valueColor: "text-pink-600",
+    format: (v: number) => formatNumber(v),
+    changeKey: "viewsChange" as const,
+  },
 ];
 
 export default function DashboardStats({ stats }: Props) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-5">
       {CARDS.map((card, i) => {
         const Icon = card.icon;
         const value = stats[card.key];

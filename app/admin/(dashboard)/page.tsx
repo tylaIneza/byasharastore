@@ -30,6 +30,9 @@ async function getDashboardData() {
     lowStockProducts,
     allTimeRevenue,
     todayOrders,
+    totalViews,
+    todayViews,
+    lastMonthViews,
   ] = await Promise.all([
     prisma.order.aggregate({ where: { createdAt: { gte: startOfMonth }, status: { not: "CANCELLED" } }, _sum: { total: true } }),
     prisma.order.aggregate({ where: { createdAt: { gte: startOfLastMonth, lte: endOfLastMonth }, status: { not: "CANCELLED" } }, _sum: { total: true } }),
@@ -66,6 +69,9 @@ async function getDashboardData() {
     }),
     prisma.order.aggregate({ where: { status: { not: "CANCELLED" } }, _sum: { total: true } }),
     prisma.order.count({ where: { createdAt: { gte: startOfToday } } }),
+    prisma.pageView.count(),
+    prisma.pageView.count({ where: { createdAt: { gte: startOfToday } } }),
+    prisma.pageView.count({ where: { createdAt: { gte: startOfLastMonth, lte: endOfLastMonth } } }),
   ]);
 
   const pct = (c: number, l: number) => l === 0 ? 100 : +((c - l) / l * 100).toFixed(1);
@@ -84,6 +90,9 @@ async function getDashboardData() {
       productsChange: 0,
       allTimeRevenue: Number(allTimeRevenue._sum.total ?? 0),
       todayOrders,
+      totalViews,
+      todayViews,
+      viewsChange: pct(totalViews, lastMonthViews),
     },
     recentOrders: recentOrders.map((o) => ({
       id: o.id, orderNumber: o.orderNumber, status: o.status,
