@@ -13,7 +13,7 @@ import { checkoutSchema, CheckoutFormData } from "@/lib/validators/order";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Input";
 
-const MOBILE_MONEY_METHODS = ["MTN_MOMO", "AIRTEL_MONEY"];
+const MOBILE_MONEY_METHODS = ["MTN_MOMO"];
 type PayStep = "form" | "waiting" | "confirmed" | "failed";
 
 export default function CheckoutPage() {
@@ -222,7 +222,7 @@ export default function CheckoutPage() {
   }
 
   const isMobileMoney = MOBILE_MONEY_METHODS.includes(paymentMethod);
-  const momoLabel = paymentMethod === "MTN_MOMO" ? "MTN MoMo" : "Airtel Money";
+  const momoLabel = "MTN MoMo";
 
   // ── Mobile Money waiting overlay ───────────────────────────────────────────
   if (payStep === "waiting") {
@@ -394,14 +394,11 @@ export default function CheckoutPage() {
                 {paymentError && (
                   <p className="text-xs text-red-500 mb-3">Please select a payment method to continue.</p>
                 )}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {[
-                    { id: "VISA",         label: "Visa",         bg: "#1A1F71", display: <span className="font-black italic text-lg tracking-tight text-white">VISA</span> },
-                    { id: "MASTERCARD",   label: "Mastercard",   bg: "#fff",    display: <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#EB001B] -mr-2 inline-block"/><span className="w-5 h-5 rounded-full bg-[#F79E1B] inline-block opacity-90"/><span className="ml-2 text-xs font-bold text-slate-700">Mastercard</span></span> },
-                    { id: "MTN_MOMO",     label: "MTN MoMo",     bg: "#FFCC00", display: <span className="font-black text-sm text-black">MTN MoMo</span> },
-                    { id: "AIRTEL_MONEY", label: "Airtel Money", bg: "#E30613", display: <span className="font-black text-sm text-white">Airtel Money</span> },
-                    { id: "APPLE_PAY",    label: "Apple Pay",    bg: "#000",    display: <span className="flex items-center gap-1"><svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg><span className="text-white font-semibold text-sm">Pay</span></span> },
-                    { id: "AFRIPAY",      label: "Afripay",      bg: "#00A859", display: <span className="font-black text-sm text-white">Afripay</span> },
+                    { id: "VISA",       label: "Visa",       bg: "#1A1F71", display: <span className="font-black italic text-lg tracking-tight text-white">VISA</span> },
+                    { id: "MASTERCARD", label: "Mastercard", bg: "#fff",    display: <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#EB001B] -mr-2 inline-block"/><span className="w-5 h-5 rounded-full bg-[#F79E1B] inline-block opacity-90"/><span className="ml-2 text-xs font-bold text-slate-700">Mastercard</span></span> },
+                    { id: "MTN_MOMO",   label: "MTN MoMo",   bg: "#FFCC00", display: <span className="font-black text-sm text-black">MTN MoMo</span> },
                   ].map((method) => (
                     <button
                       key={method.id}
@@ -438,7 +435,7 @@ export default function CheckoutPage() {
                       type="tel"
                       value={momoPhone}
                       onChange={(e) => setMomoPhone(e.target.value)}
-                      placeholder={paymentMethod === "MTN_MOMO" ? "e.g. +250 788 000 000" : "e.g. +250 738 000 000"}
+                      placeholder="e.g. +250 788 000 000"
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] text-sm"
                       required
                     />
