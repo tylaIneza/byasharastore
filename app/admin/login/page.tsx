@@ -20,8 +20,8 @@ export default function AdminLoginPage() {
   const [error, setError] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  const emailForm = useForm({ resolver: zodResolver(emailSchema) });
-  const otpForm = useForm({ resolver: zodResolver(otpSchema) });
+  const emailForm = useForm<{ email: string }>({ resolver: zodResolver(emailSchema) });
+  const otpForm = useForm<{ otp: string }>({ resolver: zodResolver(otpSchema) });
 
   async function onSendOTP(data: { email: string }) {
     setLoading(true);
