@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Package, Truck, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -21,7 +21,7 @@ interface OrderResult {
   items: { productName: string; productSku: string; quantity: number; unitPrice: number; totalPrice: number }[];
 }
 
-export default function TrackOrderPage() {
+function TrackOrderContent() {
   const { t } = useLanguageStore();
   const searchParams = useSearchParams();
   const [orderNumber, setOrderNumber] = useState(searchParams.get("order")?.toUpperCase() ?? "");
@@ -206,5 +206,17 @@ export default function TrackOrderPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function TrackOrderPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-[#2563EB]/30 border-t-[#2563EB] rounded-full animate-spin" />
+      </div>
+    }>
+      <TrackOrderContent />
+    </Suspense>
   );
 }
