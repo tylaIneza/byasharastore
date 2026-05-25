@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import CompactHero from "@/components/store/CompactHero";
 import CategoryGrid from "@/components/store/CategoryGrid";
 import FeaturedProducts from "@/components/store/FeaturedProducts";
