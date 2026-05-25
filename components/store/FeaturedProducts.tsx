@@ -1,4 +1,3 @@
-import "server-only";
 import Link from "next/link";
 import { ArrowRight, TrendingUp } from "lucide-react";
 import ProductCard from "./ProductCard";
