@@ -3,20 +3,20 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { translations, Language } from "@/lib/translations";
 
-type Translation = (typeof translations)[Language];
+type T = typeof translations["en"];
 
 interface LanguageStore {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: Translation;
+  t: T;
 }
 
 export const useLanguageStore = create<LanguageStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       language: "en",
       t: translations["en"],
-      setLanguage: (language) => set({ language, t: translations[language] }),
+      setLanguage: (language) => set({ language, t: translations[language] as unknown as T }),
     }),
     {
       name: "byashara-language",
