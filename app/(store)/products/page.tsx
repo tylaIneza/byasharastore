@@ -1,12 +1,13 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { Suspense, useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { ProductCardSkeleton } from "@/components/ui/Skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import ProductCard from "@/components/store/ProductCard";
-import { ProductCardSkeleton } from "@/components/ui/Skeleton";
 import { Button } from "@/components/ui/Button";
 import { Product, Category } from "@/types";
+
 
 const SORT_OPTIONS = [
   { value: "newest", label: "Newest First" },
@@ -15,7 +16,7 @@ const SORT_OPTIONS = [
   { value: "trending", label: "Trending" },
 ];
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -236,5 +237,27 @@ export default function ProductsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+        <div className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 py-10">
+          <div className="container-base">
+            <div className="h-8 w-48 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse mb-2" />
+            <div className="h-4 w-32 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+          </div>
+        </div>
+        <div className="container-base py-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
+            {Array.from({ length: 12 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+          </div>
+        </div>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   );
 }
