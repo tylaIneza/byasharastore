@@ -20,6 +20,7 @@ async function getFeaturedProducts(): Promise<Product[]> {
       pricingTiers: p.pricingTiers.map((t) => ({ ...t, price: Number(t.price) })),
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),
+      category: p.category ? { ...p.category, createdAt: p.category.createdAt.toISOString(), updatedAt: p.category.updatedAt.toISOString() } : undefined,
     })) as Product[];
   } catch {
     return [];
