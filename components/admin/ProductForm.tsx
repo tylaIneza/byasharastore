@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,11 +43,11 @@ export default function ProductForm({ product }: Props) {
     name: "pricingTiers" as never,
   });
 
-  useState(() => {
+  useEffect(() => {
     fetch("/api/categories?active=true").then((r) => r.json()).then((d) => {
       if (d.success) setCategories(d.data);
     });
-  });
+  }, []);
 
   const onDrop = useCallback(async (files: File[]) => {
     setUploading(true);

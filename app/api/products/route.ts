@@ -78,9 +78,10 @@ export async function POST(req: NextRequest) {
     }
 
     const slug = slugify(parsed.data.name);
+    const { pricingTiers: _pt, ...productData } = parsed.data;
     const product = await prisma.product.create({
       data: {
-        ...parsed.data,
+        ...productData,
         slug,
         pricingTiers: pricingTiers?.length ? { create: pricingTiers } : undefined,
         images: images?.length ? { create: images } : undefined,
@@ -88,19 +89,22 @@ export async function POST(req: NextRequest) {
       include: { images: { orderBy: { sortOrder: "asc" } }, pricingTiers: true, category: true },
     });
 
-    await prisma.auditLog.create({
-      data: {
-        userId: (session.user as { id?: string }).id ?? null,
-        action: "CREATE",
-        entityType: "Product",
-        entityId: product.id,
-        changes: JSON.stringify({ name: product.name }),
-      },
-    });
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: (session.user as { id?: string }).id ?? null,
+          action: "CREATE",
+          entityType: "Product",
+          entityId: product.id,
+          changes: JSON.stringify({ name: product.name }),
+        },
+      });
+    } catch { /* non-fatal */ }
 
     return NextResponse.json({ success: true, data: product }, { status: 201 });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     console.error("POST /api/products error:", err);
-    return NextResponse.json({ success: false, error: "Failed to create product" }, { status: 500 });
+    return NextResponse.json({ success: false, error: msg }, { status: 500 });
   }
 }
