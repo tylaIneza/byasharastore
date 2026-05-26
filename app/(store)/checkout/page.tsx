@@ -8,12 +8,38 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Package, ArrowLeft, ShieldCheck, Smartphone, CheckCircle2, XCircle, Loader2, LocateFixed, MapPin, Phone, FileText, User } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useLanguageStore } from "@/store/language";
-import { formatCurrency, calculateDeliveryFee, nearestBranch } from "@/lib/utils";
+import { formatCurrency, calculateDeliveryFee, nearestBranch, CITY_CENTERS, FREE_DELIVERY_THRESHOLD } from "@/lib/utils";
 import { checkoutSchema, CheckoutFormData } from "@/lib/validators/order";
 import { Button } from "@/components/ui/Button";
 
 const MOBILE_MONEY_METHODS = ["MTN_MOMO"];
 type PayStep = "form" | "waiting" | "confirmed" | "failed";
+
+// Keywords → city key (must match keys in CITY_CENTERS)
+const ADDRESS_CITY_KEYWORDS: Record<string, string> = {
+  // Kigali districts / sectors
+  kigali: "kigali", nyabugogo: "kigali", kimironko: "kigali",
+  remera: "kigali", kicukiro: "kigali", gasabo: "kigali",
+  nyarugenge: "kigali", gisozi: "kigali", kibagabaga: "kigali",
+  gikondo: "kigali", kanombe: "kigali", kabeza: "kigali",
+  // Rwanda cities
+  musanze: "musanze", ruhengeri: "musanze",
+  rubavu: "rubavu", gisenyi: "rubavu",
+  huye: "huye", butare: "huye",
+  nyagatare: "nyagatare",
+  muhanga: "muhanga", gitarama: "muhanga",
+  // DRC
+  goma: "goma", bukavu: "bukavu",
+  butembo: "butembo", kinshasa: "kinshasa", lubumbashi: "lubumbashi",
+};
+
+function detectCityFromAddress(text: string): string | null {
+  const lower = text.toLowerCase();
+  for (const [kw, city] of Object.entries(ADDRESS_CITY_KEYWORDS)) {
+    if (lower.includes(kw)) return city;
+  }
+  return null;
+}
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -35,9 +61,12 @@ export default function CheckoutPage() {
     district?: string; sector?: string; cell?: string; city?: string; road?: string; country?: string;
   } | null>(null);
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CheckoutFormData>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
   });
+
+  const addressValue = watch("address") || "";
+  const cityFromText = detectCityFromAddress(addressValue);
 
   async function useMyLocation() {
     if (!navigator.geolocation) {
@@ -95,14 +124,18 @@ export default function CheckoutPage() {
   }
 
   const subtotal = getSubtotal();
-  const detectedCity = locationDetails?.city || "Kigali";
-  const deliveryFee = calculateDeliveryFee(subtotal, detectedCity, "Rwanda", gpsCoords ?? undefined);
+  const effectiveCity = locationDetails?.city || cityFromText || "";
+  const deliveryFee = calculateDeliveryFee(subtotal, effectiveCity || "Kigali", "Rwanda", gpsCoords ?? undefined);
   const total = subtotal + deliveryFee;
-  const branchInfo = (gpsCoords || locationDetails?.city) && subtotal < 500000
-    ? (gpsCoords
+  // Compute nearest branch for the fee card
+  const branchInfo = subtotal < FREE_DELIVERY_THRESHOLD
+    ? gpsCoords
         ? nearestBranch(gpsCoords.lat, gpsCoords.lng)
-        : null)
+        : effectiveCity && CITY_CENTERS[effectiveCity]
+          ? nearestBranch(CITY_CENTERS[effectiveCity].lat, CITY_CENTERS[effectiveCity].lng)
+          : null
     : null;
+  const showFeeCard = subtotal < FREE_DELIVERY_THRESHOLD && (!!gpsCoords || !!effectiveCity);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -127,7 +160,7 @@ export default function CheckoutPage() {
   }
 
   function buildPayload(data: CheckoutFormData) {
-    const city = locationDetails?.city || "";
+    const city = locationDetails?.city || cityFromText || "";
     const country = locationDetails?.country === "CD" ? "DRC" : "Rwanda";
     return {
       customer: {
@@ -486,6 +519,41 @@ export default function CheckoutPage() {
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none transition"
             />
             {errors.address && <p className="text-xs text-red-500 mt-1.5">{errors.address.message}</p>}
+
+            {/* ── Live delivery fee card ─────────────────── */}
+            {showFeeCard && (
+              <div className="mt-3 rounded-xl border border-blue-100 dark:border-blue-800/50 bg-blue-50 dark:bg-blue-900/20 p-3 space-y-2">
+                <p className="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider">Delivery Estimate</p>
+                <div className="space-y-1 text-xs">
+                  {branchInfo && (
+                    <>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>Nearest branch</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{branchInfo.branch.label}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>Distance</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">{branchInfo.distanceKm.toFixed(1)} km</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>Rate</span>
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">1,500 RWF / 10 km</span>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex justify-between pt-1 border-t border-blue-100 dark:border-blue-800/50 font-bold text-sm">
+                    <span className="text-slate-700 dark:text-slate-300">Transport fee</span>
+                    <span className="text-[#2563EB]">{formatCurrency(deliveryFee)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {subtotal >= FREE_DELIVERY_THRESHOLD && (
+              <p className="mt-3 text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                🎉 Free delivery — order qualifies (above {formatCurrency(FREE_DELIVERY_THRESHOLD)})
+              </p>
+            )}
           </div>
 
           {/* ── Notes ──────────────────────────────────────── */}
