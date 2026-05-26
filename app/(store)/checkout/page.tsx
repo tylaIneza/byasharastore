@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Package, ArrowLeft, ShieldCheck, Smartphone, CheckCircle2, XCircle, Loader2, LocateFixed, MapPin, Phone, FileText } from "lucide-react";
+import { Package, ArrowLeft, ShieldCheck, Smartphone, CheckCircle2, XCircle, Loader2, LocateFixed, MapPin, Phone, FileText, User } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useLanguageStore } from "@/store/language";
 import { formatCurrency, calculateDeliveryFee, nearestBranch } from "@/lib/utils";
@@ -31,6 +31,9 @@ export default function CheckoutPage() {
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState("");
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationDetails, setLocationDetails] = useState<{
+    district?: string; sector?: string; cell?: string; city?: string; road?: string; country?: string;
+  } | null>(null);
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
@@ -43,6 +46,7 @@ export default function CheckoutPage() {
     }
     setLocating(true);
     setLocError("");
+    setLocationDetails(null);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -54,14 +58,24 @@ export default function CheckoutPage() {
           );
           const data = await res.json();
           const addr = data.address ?? {};
-          const street =
-            [addr.road, addr.suburb, addr.neighbourhood, addr.quarter, addr.city ?? addr.town ?? addr.village]
-              .filter(Boolean)
-              .join(", ");
-          const fullAddress = street || data.display_name?.split(",").slice(0, 4).join(", ") || "";
+
+          // Extract Rwanda / DRC administrative divisions
+          const district = (addr.county || addr.state_district || "")
+            .replace(/\s*district\s*/gi, "").trim();
+          const sector   = addr.suburb || addr.quarter || addr.borough || "";
+          const cell     = addr.neighbourhood || addr.village || "";
+          const city     = addr.city || addr.town || addr.municipality || "";
+          const road     = addr.road || addr.pedestrian || addr.path || "";
+          const country  = addr.country_code?.toUpperCase() || "RW";
+
+          setLocationDetails({ district, sector, cell, city, road, country });
+
+          // Build full address string from all available parts
+          const parts = [road, cell, sector, district, city].filter(Boolean);
+          const fullAddress = parts.join(", ") || data.display_name?.split(",").slice(0, 4).join(", ") || "";
           if (fullAddress) setValue("address", fullAddress, { shouldValidate: true });
         } catch {
-          setLocError("Location found but address lookup failed. Please check your fields.");
+          setLocError("Location found but address lookup failed. Please enter your address manually.");
         } finally {
           setLocating(false);
         }
@@ -69,25 +83,25 @@ export default function CheckoutPage() {
       (err) => {
         setLocating(false);
         if (err.code === 1) {
-          // PERMISSION_DENIED
           setLocError("Location permission denied. Click the lock icon in your browser address bar to allow it.");
         } else if (err.code === 2) {
-          // POSITION_UNAVAILABLE — common on desktop when system Location Services are off
           setLocError("Location unavailable. On Mac/PC, make sure Location Services are enabled in system settings for your browser.");
         } else {
-          // TIMEOUT
           setLocError("Location request timed out. Check your connection and try again.");
         }
       },
-      { timeout: 15000, enableHighAccuracy: false, maximumAge: 60000 }
+      { timeout: 15000, enableHighAccuracy: true, maximumAge: 30000 }
     );
   }
 
   const subtotal = getSubtotal();
-  const deliveryFee = calculateDeliveryFee(subtotal, "Kigali", "Rwanda", gpsCoords ?? undefined);
+  const detectedCity = locationDetails?.city || "Kigali";
+  const deliveryFee = calculateDeliveryFee(subtotal, detectedCity, "Rwanda", gpsCoords ?? undefined);
   const total = subtotal + deliveryFee;
-  const branchInfo = gpsCoords && subtotal < 500000
-    ? nearestBranch(gpsCoords.lat, gpsCoords.lng)
+  const branchInfo = (gpsCoords || locationDetails?.city) && subtotal < 500000
+    ? (gpsCoords
+        ? nearestBranch(gpsCoords.lat, gpsCoords.lng)
+        : null)
     : null;
 
   useEffect(() => { setMounted(true); }, []);
@@ -113,11 +127,19 @@ export default function CheckoutPage() {
   }
 
   function buildPayload(data: CheckoutFormData) {
+    const city = locationDetails?.city || "";
+    const country = locationDetails?.country === "CD" ? "DRC" : "Rwanda";
     return {
-      customer: { phone: data.phone, address: data.address, country: "Rwanda", city: "" },
+      customer: {
+        name: data.name?.trim() || undefined,
+        phone: data.phone,
+        address: data.address,
+        country,
+        city,
+      },
       items: items.map((item) => ({ productId: item.productId, productName: item.name, productSku: item.sku, quantity: item.quantity, unitPrice: item.unitPrice, totalPrice: item.totalPrice })),
       subtotal, deliveryFee, total,
-      deliveryAddress: data.address, city: "", country: "Rwanda",
+      deliveryAddress: data.address, city, country,
       notes: data.notes || undefined,
       paymentMethod,
     };
@@ -387,6 +409,24 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+          {/* ── Full Name ──────────────────────────────────── */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                <User className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+              </div>
+              <label className="font-bold text-sm text-slate-800 dark:text-slate-200">
+                Full Name <span className="text-slate-400 font-normal text-xs">(optional)</span>
+              </label>
+            </div>
+            <input
+              type="text"
+              placeholder="Your name or business name"
+              {...register("name")}
+              className="w-full h-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-4 text-base text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition"
+            />
+          </div>
+
           {/* ── Phone ──────────────────────────────────────── */}
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
@@ -424,7 +464,21 @@ export default function CheckoutPage() {
               </button>
             </div>
             {locError && <p className="text-xs text-red-500 mb-2 flex items-center gap-1"><XCircle className="w-3 h-3 flex-shrink-0" />{locError}</p>}
-            {gpsCoords && <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-1"><LocateFixed className="w-3 h-3" />Location detected</p>}
+
+            {locationDetails && (
+              <div className="mb-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-xl p-3">
+                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 mb-2">
+                  <LocateFixed className="w-3 h-3" /> Location detected
+                </p>
+                <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
+                  {locationDetails.district && (<><span className="text-slate-500 dark:text-slate-400">District</span><span className="font-semibold text-slate-800 dark:text-slate-100">{locationDetails.district}</span></>)}
+                  {locationDetails.sector   && (<><span className="text-slate-500 dark:text-slate-400">Sector</span><span className="font-semibold text-slate-800 dark:text-slate-100">{locationDetails.sector}</span></>)}
+                  {locationDetails.cell     && (<><span className="text-slate-500 dark:text-slate-400">Cell</span><span className="font-semibold text-slate-800 dark:text-slate-100">{locationDetails.cell}</span></>)}
+                  {locationDetails.city     && (<><span className="text-slate-500 dark:text-slate-400">City / Town</span><span className="font-semibold text-slate-800 dark:text-slate-100">{locationDetails.city}</span></>)}
+                  {locationDetails.road     && (<><span className="text-slate-500 dark:text-slate-400">Street / Road</span><span className="font-semibold text-slate-800 dark:text-slate-100">{locationDetails.road}</span></>)}
+                </div>
+              </div>
+            )}
             <textarea
               rows={3}
               placeholder="e.g. KN 4 Ave, Nyabugogo, Kigali — or describe your location clearly"

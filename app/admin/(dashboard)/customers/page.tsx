@@ -55,14 +55,23 @@ export default function CustomersPage() {
                 <td className="px-5 py-3">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-[#2563EB] flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-xs font-bold">{c.name.charAt(0).toUpperCase()}</span>
+                      <span className="text-white text-xs font-bold">
+                        {(c.name && c.name !== c.phone) ? c.name.charAt(0).toUpperCase() : "#"}
+                      </span>
                     </div>
-                    <span className="font-medium text-slate-800 dark:text-slate-200">{c.name}</span>
+                    <div>
+                      <p className="font-medium text-slate-800 dark:text-slate-200">
+                        {(c.name && c.name !== c.phone) ? c.name : <span className="text-slate-400 italic">No name</span>}
+                      </p>
+                      <p className="text-xs text-slate-400">{c.phone}</p>
+                    </div>
                   </div>
                 </td>
-                <td className="px-5 py-3 text-slate-500">{c.phone}</td>
+                <td className="px-5 py-3 font-mono text-sm text-slate-700 dark:text-slate-300">{c.phone}</td>
                 <td className="px-5 py-3 text-slate-400 text-xs">{c.email ?? "—"}</td>
-                <td className="px-5 py-3 text-slate-500">{c.city}, {c.country}</td>
+                <td className="px-5 py-3 text-slate-500 text-xs">
+                  {[c.city, c.country].filter(Boolean).join(", ") || "—"}
+                </td>
                 <td className="px-5 py-3 font-semibold">{c.totalOrders}</td>
                 <td className="px-5 py-3 font-bold text-[#2563EB]">{formatCurrency(Number(c.totalSpent))}</td>
                 <td className="px-5 py-3 text-slate-400 text-xs">{formatDate(c.createdAt)}</td>
