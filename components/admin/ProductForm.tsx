@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,6 +10,16 @@ import { productSchema, ProductFormData } from "@/lib/validators/product";
 import { Input, Textarea, Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Product } from "@/types";
+
+function generateSku(name: string): string {
+  const code = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "")
+    .slice(0, 6)
+    .padEnd(4, "X");
+  const num = String(Math.floor(Math.random() * 900 + 100));
+  return `BYS-${code}-${num}`;
+}
 
 interface Props { product?: Product }
 
@@ -23,7 +33,9 @@ export default function ProductForm({ product }: Props) {
   const [uploading, setUploading] = useState(false);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
 
-  const { register, control, handleSubmit, formState: { errors } } = useForm<ProductFormData>({
+  const skuManuallyEdited = useRef(false);
+
+  const { register, control, handleSubmit, watch, setValue, formState: { errors } } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name ?? "",
@@ -37,6 +49,13 @@ export default function ProductForm({ product }: Props) {
       status: product?.status ?? "DRAFT",
     },
   });
+
+  const watchedName = watch("name");
+
+  useEffect(() => {
+    if (isEdit || skuManuallyEdited.current || !watchedName?.trim()) return;
+    setValue("sku", generateSku(watchedName), { shouldValidate: false, shouldDirty: false });
+  }, [watchedName, isEdit, setValue]);
 
   const { fields: tiers, append: appendTier, remove: removeTier } = useFieldArray({
     control,
@@ -108,7 +127,13 @@ export default function ProductForm({ product }: Props) {
             <h2 className="font-bold text-slate-900 dark:text-white">Basic Information</h2>
             <Input label="Product Name" required error={errors.name?.message} {...register("name")} />
             <div className="grid grid-cols-2 gap-4">
-              <Input label="SKU" required error={errors.sku?.message} placeholder="BYS-001" {...register("sku")} />
+              <Input
+                label="SKU"
+                required
+                error={errors.sku?.message}
+                placeholder="BYS-001"
+                {...register("sku", { onChange: () => { skuManuallyEdited.current = true; } })}
+              />
               <Select
                 label="Category"
                 required
