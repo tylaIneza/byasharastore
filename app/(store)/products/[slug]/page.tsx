@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import ProductDetail from "@/components/store/ProductDetail";
 import { Product } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 interface Props { params: Promise<{ slug: string }> }
 
 async function getProduct(slug: string): Promise<Product | null> {

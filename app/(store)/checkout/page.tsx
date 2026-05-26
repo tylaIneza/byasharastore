@@ -11,7 +11,6 @@ import { useLanguageStore } from "@/store/language";
 import { formatCurrency, calculateDeliveryFee, nearestBranch } from "@/lib/utils";
 import { checkoutSchema, CheckoutFormData } from "@/lib/validators/order";
 import { Button } from "@/components/ui/Button";
-import { Textarea } from "@/components/ui/Input";
 
 const MOBILE_MONEY_METHODS = ["MTN_MOMO"];
 type PayStep = "form" | "waiting" | "confirmed" | "failed";
@@ -27,8 +26,6 @@ export default function CheckoutPage() {
   const [momoPhone, setMomoPhone] = useState("");
   const [payStep, setPayStep] = useState<PayStep>("form");
   const [payError, setPayError] = useState("");
-  const [referenceId, setReferenceId] = useState("");
-  const [pendingPayload, setPendingPayload] = useState<Record<string, unknown> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [locating, setLocating] = useState(false);
@@ -95,6 +92,13 @@ export default function CheckoutPage() {
 
   useEffect(() => { setMounted(true); }, []);
 
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
   if (!mounted) return null;
 
   if (items.length === 0) {
@@ -148,7 +152,16 @@ export default function CheckoutPage() {
         if (data.status === "SUCCESSFUL") {
           stopPolling();
           setPayStep("confirmed");
-          await placeOrder(payload);
+          try {
+            await placeOrder(payload);
+          } catch (err) {
+            setPayError(
+              (err instanceof Error ? err.message : "Order creation failed.") +
+              " Your payment went through — please contact support with reference: " + refId
+            );
+            setPayStep("failed");
+            setPlacing(false);
+          }
         } else if (data.status === "FAILED") {
           stopPolling();
           setPayError("Payment was declined or cancelled. Please try again.");
@@ -199,8 +212,6 @@ export default function CheckoutPage() {
           setPlacing(false);
           return;
         }
-        setReferenceId(result.referenceId);
-        setPendingPayload(payload);
         setPayStep("waiting");
         await startPolling(result.referenceId, paymentMethod, payload);
       } catch (err) {
