@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
@@ -39,9 +40,7 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
         <Link href="/admin" className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-black text-xs">BY</span>
-          </div>
+          <Image src="/logo.png" alt="Byashara Store" width={36} height={36} className="rounded-lg flex-shrink-0" priority />
           <div>
             <p className="font-black text-slate-900 dark:text-white text-base leading-none">
               BY<span className="text-[#2563EB]">ASHARA</span>

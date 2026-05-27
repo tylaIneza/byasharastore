@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { slugify } from "@/lib/utils";
+import { emitStoreUpdate } from "@/lib/events";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -56,6 +57,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
       },
     });
 
+    emitStoreUpdate("product");
     return NextResponse.json({ success: true, data: product });
   } catch (err) {
     console.error("PUT /api/products/[id] error:", err);
@@ -79,6 +81,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
         changes: JSON.stringify({ status: "ARCHIVED" }),
       },
     });
+    emitStoreUpdate("product");
     return NextResponse.json({ success: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

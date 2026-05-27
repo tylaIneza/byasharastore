@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingCart, Menu, X, Moon, Sun, Search, Settings } from "lucide-react";
@@ -57,9 +58,7 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-[#2563EB] flex items-center justify-center">
-                <span className="text-white font-black text-xs">BY</span>
-              </div>
+              <Image src="/logo.png" alt="Byashara Store" width={40} height={40} className="rounded-lg" priority />
               <span className="font-black text-lg tracking-tight text-[#0F172A] dark:text-white hidden sm:block">
                 BY<span className="text-[#2563EB]">ASHARA</span>
               </span>

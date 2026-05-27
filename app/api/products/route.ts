@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { productSchema } from "@/lib/validators/product";
 import { slugify } from "@/lib/utils";
+import { emitStoreUpdate } from "@/lib/events";
 
 export async function GET(req: NextRequest) {
   try {
@@ -101,6 +102,7 @@ export async function POST(req: NextRequest) {
       });
     } catch { /* non-fatal */ }
 
+    emitStoreUpdate("product");
     return NextResponse.json({ success: true, data: product }, { status: 201 });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);

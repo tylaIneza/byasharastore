@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { emitStoreUpdate } from "@/lib/events";
 
 export async function GET(_req: NextRequest) {
   const session = await auth();
@@ -34,6 +35,7 @@ export async function PUT(req: NextRequest) {
       )
     );
 
+    emitStoreUpdate("settings");
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ success: false, error: "Failed to update settings" }, { status: 500 });
