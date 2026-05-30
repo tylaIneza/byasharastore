@@ -10,9 +10,6 @@ export default function CompactHero() {
     <section className="bg-gradient-to-r from-[#0F172A] via-[#1e3a8a] to-[#1D4ED8] py-8 md:py-10">
       <div className="container-base flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
-          <p className="text-[#93C5FD] text-xs font-semibold uppercase tracking-widest mb-1">
-            {t.hero.badge}
-          </p>
           <h1 className="text-white text-2xl md:text-3xl font-black leading-tight">
             {t.hero.title} <span className="text-[#60A5FA]">{t.hero.titleAccent}</span>
           </h1>

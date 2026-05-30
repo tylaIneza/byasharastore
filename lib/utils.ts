@@ -112,35 +112,14 @@ export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// 1,500 RWF per 10 km bracket (minimum 1,500 RWF)
-export function feeFromDistance(km: number): number {
-  return Math.max(1, Math.ceil(km / 10)) * 1500;
-}
-
-export interface NearestBranch {
-  branch: typeof BRANCH_KIGALI;
-  distanceKm: number;
-  fee: number;
-}
-
-export function nearestBranch(lat: number, lng: number): NearestBranch {
-  const dK = haversineKm(lat, lng, BRANCH_KIGALI.lat, BRANCH_KIGALI.lng);
-  const dR = haversineKm(lat, lng, BRANCH_RUBAVU.lat, BRANCH_RUBAVU.lng);
-  if (dK <= dR) {
-    return { branch: BRANCH_KIGALI, distanceKm: dK, fee: feeFromDistance(dK) };
-  }
-  return { branch: BRANCH_RUBAVU, distanceKm: dR, fee: feeFromDistance(dR) };
-}
+export const FLAT_DELIVERY_FEE = 1000;
 
 export function calculateDeliveryFee(
   total: number,
-  city: string,
+  _city: string,
   _country: string,
-  coords?: { lat: number; lng: number }
+  _coords?: { lat: number; lng: number }
 ): number {
   if (total >= FREE_DELIVERY_THRESHOLD) return 0;
-  const pt = coords ?? CITY_CENTERS[city.toLowerCase()];
-  if (pt) return nearestBranch(pt.lat, pt.lng).fee;
-  // Unknown city with no coords — flat fallback
-  return 5000;
+  return FLAT_DELIVERY_FEE;
 }

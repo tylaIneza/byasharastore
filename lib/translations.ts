@@ -5,10 +5,10 @@ export const translations = {
       search: "Search products…", admin: "Admin Portal",
     },
     hero: {
-      badge: "Rwanda & Eastern DRC's #1 Wholesale Electronics",
+      badge: "Quality Electronics — Fast Delivery",
       title: "Premium Electronics at",
-      titleAccent: "Wholesale Prices",
-      subtitle: "Bulk pricing, fast delivery across Rwanda & Eastern DRC. Order online — no account needed.",
+      titleAccent: "Best Prices",
+      subtitle: "Fast delivery across Rwanda. Order online — no account needed.",
       cta: "Shop Now", secondary: "View Categories",
       badge2: "HQ — Kigali", badge3: "Rubavu Branch",
       bestDeals: "Best Deals",
@@ -93,7 +93,7 @@ export const translations = {
       viewProducts: "View Products",
     },
     footer: {
-      tagline: "Rwanda & DRC's trusted wholesale electronics supplier.",
+      tagline: "Your trusted electronics store in Rwanda.",
       quickLinks: "Quick Links", contact: "Contact Us",
       delivery: "Delivery Info", followUs: "Follow Us",
       deliveryInfo: "We deliver across Rwanda and Eastern DRC (Goma, Bukavu). Orders confirmed within 24h.",
@@ -127,7 +127,7 @@ export const translations = {
       search: "Rechercher des produits…", admin: "Portail Admin",
     },
     hero: {
-      badge: "N°1 Électronique en Gros au Rwanda & Est du Congo",
+      badge: "Électronique de Qualité — Livraison Rapide",
       title: "Électronique Premium à",
       titleAccent: "Prix de Gros",
       subtitle: "Tarifs en gros, livraison rapide au Rwanda & Est du Congo. Commandez en ligne — aucun compte requis.",
@@ -249,7 +249,7 @@ export const translations = {
       search: "Shakisha ibicuruzwa…", admin: "Uburinganire bw'Ubuyobozi",
     },
     hero: {
-      badge: "Inzira y'1 yo Kugura Ikoranabuhanga mu Mubyuliye muri Rwanda na Kongo y'Uburasirazuba",
+      badge: "Ikoranabuhanga ry'Ubuziranenge — Dohereza Byihuse",
       title: "Ikoranabuhanga ry'Ubuziranenge ku",
       titleAccent: "Giciro cy'Umubyuliye",
       subtitle: "Ibiciro by'umubyuliye, dohereza byihuse muri Rwanda na Kongo y'Uburasirazuba. Gura kuri interineti — nta konti ikenewe.",

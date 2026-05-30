@@ -9,8 +9,8 @@ import PaymentMethods from "@/components/store/PaymentMethods";
 import { ProductCardSkeleton } from "@/components/ui/Skeleton";
 
 export const metadata: Metadata = {
-  title: "BYASHARA STORE — Wholesale Electronics Rwanda & DRC",
-  description: "Browse wholesale electronics — phones, laptops, accessories and more. Best bulk prices in Rwanda and Eastern DRC.",
+  title: "BYASHARA STORE",
+  description: "Browse electronics, accessories, and more. Order online with fast delivery.",
 };
 
 export default function HomePage() {

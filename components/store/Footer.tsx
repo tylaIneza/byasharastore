@@ -69,8 +69,7 @@ export default function Footer() {
               <li>• Nyabugogo, Kigali</li>
               <li>• Mahoko, Rubavu</li>
               <li className="mt-2 text-[#60A5FA] font-semibold">{t.footer.rate}:</li>
-              <li>• 1,500 RWF / 10 km</li>
-              <li>• (e.g. 20 km = 3,000 RWF)</li>
+              <li>• Flat fee: 1,000 RWF</li>
               <li className="text-emerald-400">• {t.footer.freeAbove}</li>
             </ul>
           </div>

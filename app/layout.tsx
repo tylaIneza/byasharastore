@@ -11,12 +11,12 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "BYASHARA STORE — Wholesale Electronics Rwanda & DRC",
+    default: "BYASHARA STORE",
     template: "%s | BYASHARA STORE",
   },
   description:
-    "Rwanda & Eastern DRC's #1 wholesale electronics marketplace. Bulk pricing on phones, laptops, accessories and more. Order online, fast delivery.",
-  keywords: ["wholesale electronics", "Rwanda electronics", "DRC electronics", "Goma electronics", "bulk order", "wholesale phones"],
+    "Shop electronics, accessories, and more. Order online with fast delivery.",
+  keywords: ["electronics", "Rwanda electronics", "accessories", "chargers", "speakers", "power banks"],
   authors: [{ name: "BYASHARA STORE" }],
   creator: "BYASHARA STORE",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3210"),
@@ -24,13 +24,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_RW",
     siteName: "BYASHARA STORE",
-    title: "BYASHARA STORE — Wholesale Electronics",
-    description: "Rwanda & Eastern DRC's #1 wholesale electronics marketplace.",
+    title: "BYASHARA STORE",
+    description: "Shop electronics, accessories, and more.",
   },
   twitter: {
     card: "summary_large_image",
     title: "BYASHARA STORE",
-    description: "Wholesale electronics for Rwanda & Eastern DRC.",
+    description: "Shop electronics, accessories, and more.",
   },
   robots: { index: true, follow: true },
   icons: {

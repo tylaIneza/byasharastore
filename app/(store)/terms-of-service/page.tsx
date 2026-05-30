@@ -73,7 +73,7 @@ export default function TermsOfServicePage() {
           <section>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3">4. Pricing and Currency</h2>
             <p>
-              All prices on our platform are displayed in <strong>Rwandan Francs (RWF)</strong> unless otherwise stated. Prices are exclusive of delivery fees, which are calculated based on distance from our nearest branch (Nyabugogo, Kigali or Mahoko, Rubavu) at the rate of <strong>1,500 RWF per 10 km</strong>. Orders totalling 500,000 RWF or more qualify for free delivery.
+              All prices on our platform are displayed in <strong>Rwandan Francs (RWF)</strong> unless otherwise stated. Prices are exclusive of a flat delivery fee of <strong>1,000 RWF</strong>. Orders totalling 500,000 RWF or more qualify for free delivery.
             </p>
             <p className="mt-2">
               Prices are subject to change without prior notice. The price applicable to your order is the price displayed at the time of order submission. We comply with the pricing transparency requirements of the Rwanda Standards Board (RSB) and the Rwanda Revenue Authority (RRA).
