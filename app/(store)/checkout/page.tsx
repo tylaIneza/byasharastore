@@ -12,7 +12,7 @@ import { formatCurrency, calculateDeliveryFee, FREE_DELIVERY_THRESHOLD } from "@
 import { checkoutSchema, CheckoutFormData } from "@/lib/validators/order";
 import { Button } from "@/components/ui/Button";
 
-const MOBILE_MONEY_METHODS = ["MTN_MOMO"];
+const MOBILE_MONEY_METHODS = ["INTOUCHPAY"];
 type PayStep = "form" | "waiting" | "confirmed" | "failed";
 
 // Keywords → city key (must match keys in CITY_CENTERS)
@@ -280,7 +280,7 @@ export default function CheckoutPage() {
   }
 
   const isMobileMoney = MOBILE_MONEY_METHODS.includes(paymentMethod);
-  const momoLabel = "MTN MoMo";
+  const momoLabel = "Mobile Money";
 
   // ── Mobile Money waiting overlay ───────────────────────────────────────────
   if (payStep === "waiting") {
@@ -547,9 +547,9 @@ export default function CheckoutPage() {
             {paymentError && <p className="text-xs text-red-500 mb-3">Please select a payment method to continue.</p>}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { id: "VISA",       label: "Visa",       bg: "#1A1F71", display: <span className="font-black italic text-lg tracking-tight text-white">VISA</span> },
-                { id: "MASTERCARD", label: "Mastercard", bg: "#fff",    display: <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#EB001B] -mr-2 inline-block"/><span className="w-5 h-5 rounded-full bg-[#F79E1B] inline-block opacity-90"/><span className="ml-2 text-xs font-bold text-slate-700">MC</span></span> },
-                { id: "MTN_MOMO",   label: "MTN MoMo",   bg: "#FFCC00", display: <span className="font-black text-sm text-black">MTN MoMo</span> },
+                { id: "VISA",       label: "Visa",         bg: "#1A1F71", display: <span className="font-black italic text-lg tracking-tight text-white">VISA</span> },
+                { id: "MASTERCARD", label: "Mastercard",   bg: "#fff",    display: <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#EB001B] -mr-2 inline-block"/><span className="w-5 h-5 rounded-full bg-[#F79E1B] inline-block opacity-90"/><span className="ml-2 text-xs font-bold text-slate-700">MC</span></span> },
+                { id: "INTOUCHPAY", label: "Mobile Money", bg: "#0A2240", display: <span className="font-black text-sm text-white">Mobile Money</span> },
               ].map((method) => (
                 <button
                   key={method.id}
@@ -576,7 +576,7 @@ export default function CheckoutPage() {
             {isMobileMoney && (
               <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  MTN MoMo Phone <span className="text-red-500">*</span>
+                  {momoLabel} Phone <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="momo-phone"

@@ -92,8 +92,15 @@ export default function Footer() {
                   <span>Rubavu, Western Province, Rwanda</span>
                 </div>
               </li>
+              <li className="flex items-start gap-3">
+                <Phone className="w-4 h-4 text-[#2563EB] flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-white font-semibold text-xs mb-0.5">Reception</p>
+                  <span>+250 792 799 721</span>
+                </div>
+              </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-[#2563EB] flex-shrink-0" />
+                <Phone className="w-4 h-4 text-slate-500 flex-shrink-0" />
                 <span>+250 782 545 277</span>
               </li>
               <li className="flex items-center gap-3">

@@ -112,7 +112,7 @@ export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-export const FLAT_DELIVERY_FEE = 1000;
+export const FLAT_DELIVERY_FEE = 0;
 
 export function calculateDeliveryFee(
   total: number,

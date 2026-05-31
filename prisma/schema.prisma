@@ -321,3 +321,30 @@ enum NotificationType {
   SYSTEM
   TEAM
 }
+
+model PaymentTransaction {
+  id                   String        @id @default(cuid())
+  requestTransactionId String        @unique
+  intouchTransactionId String?
+  type                 PaymentTxType
+  amount               Decimal       @db.Decimal(12, 2)
+  phone                String
+  status               String        @default("Pending")
+  responsecode         String?
+  referenceNo          String?
+  orderId              String?
+  description          String?       @db.Text
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([requestTransactionId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("payment_transactions")
+}
+
+enum PaymentTxType {
+  INCOMING
+  OUTGOING
+}

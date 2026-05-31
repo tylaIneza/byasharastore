@@ -7,7 +7,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Package, ShoppingCart, Users, Grid3x3,
   Warehouse, BarChart3, Bell, Settings, LogOut, Menu, X, Users2,
-  ChevronRight,
+  ChevronRight, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNotificationStore } from "@/store/notifications";
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { href: "/admin/categories", label: "Categories", icon: Grid3x3 },
   { href: "/admin/warehouse", label: "Warehouse", icon: Warehouse },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/payments", label: "Payments", icon: Wallet },
   { href: "/admin/notifications", label: "Notifications", icon: Bell },
   { href: "/admin/team", label: "Team", icon: Users2 },
   { href: "/admin/settings", label: "Settings", icon: Settings },
