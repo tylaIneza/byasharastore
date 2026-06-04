@@ -126,6 +126,8 @@ export async function requestDeposit(params: {
     referenceid?: string;
     responsecode: string;
     success: boolean;
+    message?: string;
+    statusdesc?: string;
   };
 }
 

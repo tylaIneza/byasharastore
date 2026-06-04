@@ -50,8 +50,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    if (!result.success) {
+      const reason = result.statusdesc ?? result.message ?? `IntouchPay code ${result.responsecode}`;
+      return NextResponse.json({ success: false, error: reason, responsecode: result.responsecode }, { status: 422 });
+    }
+
     return NextResponse.json({
-      success: result.success,
+      success: true,
       requestTransactionId,
       responsecode: result.responsecode,
       referenceId: result.referenceid,
