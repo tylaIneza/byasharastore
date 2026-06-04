@@ -36,11 +36,21 @@ export async function PUT(req: NextRequest, { params }: Params) {
     const body = await req.json();
     const { pricingTiers, images, ...data } = body;
 
+    let slug: string | undefined;
+    if (data.name) {
+      const baseSlug = slugify(data.name);
+      slug = baseSlug;
+      let suffix = 2;
+      while (await prisma.product.findFirst({ where: { slug, NOT: { id } } })) {
+        slug = `${baseSlug}-${suffix++}`;
+      }
+    }
+
     const product = await prisma.product.update({
       where: { id },
       data: {
         ...data,
-        slug: data.name ? slugify(data.name) : undefined,
+        slug,
         pricingTiers: pricingTiers ? { deleteMany: {}, create: pricingTiers } : undefined,
         images: images ? { deleteMany: {}, create: images } : undefined,
       },

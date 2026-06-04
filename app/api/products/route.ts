@@ -78,7 +78,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: parsed.error.errors[0]?.message }, { status: 400 });
     }
 
-    const slug = slugify(parsed.data.name);
+    const baseSlug = slugify(parsed.data.name);
+    let slug = baseSlug;
+    let suffix = 2;
+    while (await prisma.product.findUnique({ where: { slug } })) {
+      slug = `${baseSlug}-${suffix++}`;
+    }
     const { pricingTiers: _pt, ...productData } = parsed.data;
     const product = await prisma.product.create({
       data: {
