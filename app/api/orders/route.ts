@@ -183,9 +183,11 @@ export async function GET(req: NextRequest) {
     const pageSize = Math.min(100, Math.max(1, Number(searchParams.get("pageSize") ?? 20)));
     const status = searchParams.get("status") ?? "";
     const search = searchParams.get("search") ?? "";
+    const paymentMethodFilter = searchParams.get("paymentMethod") ?? "";
 
     const where: Record<string, unknown> = {};
     if (status) where.status = status;
+    if (paymentMethodFilter) where.paymentMethod = paymentMethodFilter;
     if (search) {
       where.OR = [
         { orderNumber: { contains: search } },

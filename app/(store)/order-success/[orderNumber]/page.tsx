@@ -1,13 +1,18 @@
 "use client";
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle, Package, Truck, Phone, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useLanguageStore } from "@/store/language";
+import { useCartStore } from "@/store/cart";
 
 export default function OrderSuccessPage() {
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const { t } = useLanguageStore();
+  const clearCart = useCartStore((s) => s.clearCart);
+
+  useEffect(() => { clearCart(); }, [clearCart]);
 
   const steps = [
     { icon: Phone,        color: "#2563EB", title: t.orderSuccess.reviewTitle,  desc: t.orderSuccess.reviewDesc },

@@ -1,19 +1,19 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Package, ArrowLeft, ShieldCheck, Smartphone, CheckCircle2, XCircle, Loader2, LocateFixed, MapPin, Phone, FileText, User } from "lucide-react";
+import { Package, ArrowLeft, ShieldCheck, XCircle, Loader2, LocateFixed, MapPin, Phone, FileText, User } from "lucide-react";
 import { useCartStore } from "@/store/cart";
 import { useLanguageStore } from "@/store/language";
 import { formatCurrency, calculateDeliveryFee, FREE_DELIVERY_THRESHOLD } from "@/lib/utils";
 import { checkoutSchema, CheckoutFormData } from "@/lib/validators/order";
 import { Button } from "@/components/ui/Button";
 
-const MOBILE_MONEY_METHODS = ["INTOUCHPAY"];
-type PayStep = "form" | "waiting" | "confirmed" | "failed";
+const AFRIPAY_APP_ID = "865691b289bec1a27490b54ff14e37a4";
+const AFRIPAY_APP_SECRET = "JDJ5JDEwJHF5ay5K";
+const AFRIPAY_CHECKOUT_URL = "https://www.afripay.africa/checkout/index.php";
 
 // Keywords → city key (must match keys in CITY_CENTERS)
 const ADDRESS_CITY_KEYWORDS: Record<string, string> = {
@@ -42,18 +42,11 @@ function detectCityFromAddress(text: string): string | null {
 }
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const { t } = useLanguageStore();
-  const { items, getSubtotal, clearCart } = useCartStore();
+  const { items, getSubtotal } = useCartStore();
   const [mounted, setMounted] = useState(false);
   const [placing, setPlacing] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [paymentError, setPaymentError] = useState(false);
-  const [momoPhone, setMomoPhone] = useState("");
-  const [payStep, setPayStep] = useState<PayStep>("form");
-  const [payError, setPayError] = useState("");
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState("");
   const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -131,13 +124,6 @@ export default function CheckoutPage() {
 
   useEffect(() => { setMounted(true); }, []);
 
-  useEffect(() => {
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
-
   if (!mounted) return null;
 
   if (items.length === 0) {
@@ -166,187 +152,64 @@ export default function CheckoutPage() {
       subtotal, deliveryFee, total,
       deliveryAddress: data.address, city, country,
       notes: data.notes || undefined,
-      paymentMethod,
+      paymentMethod: "AFRIPAY",
     };
   }
 
-  async function placeOrder(payload: Record<string, unknown>) {
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const result = await res.json();
-    if (result.success && result.data?.orderNumber) {
-      clearCart();
-      router.push(`/order-success/${result.data.orderNumber}`);
-    } else {
-      throw new Error(result.error ?? "Failed to place order");
+  function submitToAfriPay(orderNumber: string, amount: number) {
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = AFRIPAY_CHECKOUT_URL;
+    const fields: Record<string, string> = {
+      amount: String(Math.round(amount)),
+      currency: "RWF",
+      comment: orderNumber,
+      client_token: "",
+      return_url: `${window.location.origin}/order-success/${orderNumber}`,
+      app_id: AFRIPAY_APP_ID,
+      app_secret: AFRIPAY_APP_SECRET,
+    };
+    for (const [name, value] of Object.entries(fields)) {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
     }
-  }
-
-  function stopPolling() {
-    if (pollRef.current) clearInterval(pollRef.current);
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-  }
-
-  async function startPolling(refId: string, method: string, payload: Record<string, unknown>) {
-    // Poll every 4 seconds for up to 3 minutes
-    pollRef.current = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/payments/status/${refId}?method=${method}`);
-        const data = await res.json();
-        if (data.status === "SUCCESSFUL") {
-          stopPolling();
-          setPayStep("confirmed");
-          try {
-            await placeOrder(payload);
-          } catch (err) {
-            setPayError(
-              (err instanceof Error ? err.message : "Order creation failed.") +
-              " Your payment went through — please contact support with reference: " + refId
-            );
-            setPayStep("failed");
-            setPlacing(false);
-          }
-        } else if (data.status === "FAILED") {
-          stopPolling();
-          setPayError("Payment was declined or cancelled. Please try again.");
-          setPayStep("failed");
-          setPlacing(false);
-        }
-      } catch { /* keep polling */ }
-    }, 4000);
-
-    // Timeout after 3 minutes
-    timeoutRef.current = setTimeout(() => {
-      stopPolling();
-      setPayError("Payment confirmation timed out. Please try again.");
-      setPayStep("failed");
-      setPlacing(false);
-    }, 3 * 60 * 1000);
+    document.body.appendChild(form);
+    form.submit();
   }
 
   async function onSubmit(data: CheckoutFormData) {
-    if (!paymentMethod) {
-      setPaymentError(true);
-      document.getElementById("payment-section")?.scrollIntoView({ behavior: "smooth" });
-      return;
-    }
-    if (MOBILE_MONEY_METHODS.includes(paymentMethod) && !momoPhone.trim()) {
-      document.getElementById("momo-phone")?.focus();
-      return;
-    }
-    setPaymentError(false);
     setPlacing(true);
     const payload = buildPayload(data);
-
-    // Mobile money: initiate push first, then wait
-    if (MOBILE_MONEY_METHODS.includes(paymentMethod)) {
-      try {
-        const res = await fetch("/api/payments/initiate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ method: paymentMethod, phone: momoPhone, amount: total }),
-        });
-        const result = await res.json();
-        if (!res.ok || !result.referenceId) {
-          const errMsg = res.status === 503
-            ? `${momoLabel} payments are not yet activated. Please choose another payment method or contact the store.`
-            : (result.error ?? "Could not initiate payment. Try again.");
-          setPayError(errMsg);
-          setPayStep("failed");
-          setPlacing(false);
-          return;
-        }
-        setPayStep("waiting");
-        await startPolling(result.referenceId, paymentMethod, payload);
-      } catch (err) {
-        setPayError("Network error. Please try again.");
-        setPayStep("failed");
-        setPlacing(false);
-      }
-      return;
-    }
-
-    // Non-mobile-money: place order directly
     try {
-      await placeOrder(payload);
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (!result.success || !result.data?.orderNumber) {
+        throw new Error(result.error ?? "Failed to place order");
+      }
+      setRedirecting(true);
+      submitToAfriPay(result.data.orderNumber, total);
     } catch (err) {
       alert(err instanceof Error ? err.message : "Failed to place order. Please try again.");
-    } finally {
       setPlacing(false);
     }
   }
 
-  const isMobileMoney = MOBILE_MONEY_METHODS.includes(paymentMethod);
-  const momoLabel = "Mobile Money";
-
-  // ── Mobile Money waiting overlay ───────────────────────────────────────────
-  if (payStep === "waiting") {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
-        <div className="max-w-md w-full text-center">
-          <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="w-24 h-24 rounded-full border-4 border-[#2563EB]/20 border-t-[#2563EB] animate-spin absolute inset-0" />
-            <div className="w-24 h-24 flex items-center justify-center">
-              <Smartphone className="w-10 h-10 text-[#2563EB]" />
-            </div>
-          </div>
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">Check Your Phone</h2>
-          <p className="text-slate-500 dark:text-slate-400 mb-2">
-            A <span className="font-bold text-slate-700 dark:text-slate-200">{momoLabel}</span> payment request has been sent to
-          </p>
-          <p className="text-lg font-black text-[#2563EB] mb-6">{momoPhone}</p>
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 mb-6 text-left space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">1</span>
-              <span className="text-sm text-slate-700 dark:text-slate-300">A prompt will appear on your phone screen</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">2</span>
-              <span className="text-sm text-slate-700 dark:text-slate-300">Enter your <strong>{momoLabel}</strong> PIN to confirm</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">3</span>
-              <span className="text-sm text-slate-700 dark:text-slate-300">Your order will be placed automatically after confirmation</span>
-            </div>
-          </div>
-          <p className="text-xs text-slate-400">Amount: <strong className="text-slate-600 dark:text-slate-300">{formatCurrency(total)}</strong></p>
-          <p className="text-xs text-slate-400 mt-1">Waiting for confirmation… (expires in 3 minutes)</p>
-          <button
-            onClick={() => { stopPolling(); setPayStep("form"); setPlacing(false); }}
-            className="mt-6 text-xs text-slate-400 hover:text-red-500 transition-colors underline"
-          >
-            Cancel payment
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (payStep === "confirmed") {
+  if (redirecting) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
         <div className="text-center">
-          <CheckCircle2 className="w-20 h-20 text-emerald-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Payment Confirmed!</h2>
-          <p className="text-slate-500">Placing your order…</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (payStep === "failed") {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center px-4">
-        <div className="max-w-sm w-full text-center">
-          <XCircle className="w-20 h-20 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-3">Payment Failed</h2>
-          <p className="text-slate-500 mb-6">{payError}</p>
-          <Button onClick={() => { setPayStep("form"); setPayError(""); setPlacing(false); }} fullWidth>
-            Try Again
-          </Button>
+          <div className="w-16 h-16 rounded-full bg-[#059669]/10 flex items-center justify-center mx-auto mb-5">
+            <Loader2 className="w-8 h-8 text-[#059669] animate-spin" />
+          </div>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">Redirecting to AfriPay…</h2>
+          <p className="text-sm text-slate-500">You will be taken to AfriPay to complete your payment.<br/>Do not close this tab.</p>
         </div>
       </div>
     );
@@ -537,64 +400,22 @@ export default function CheckoutPage() {
           </div>
 
           {/* ── Payment Method ─────────────────────────────── */}
-          <div id="payment-section" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />
+              <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               </div>
-              <label className="font-bold text-sm text-slate-800 dark:text-slate-200">Payment Method <span className="text-red-500">*</span></label>
+              <label className="font-bold text-sm text-slate-800 dark:text-slate-200">Payment</label>
             </div>
-            {paymentError && <p className="text-xs text-red-500 mb-3">Please select a payment method to continue.</p>}
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { id: "VISA",       label: "Visa",         bg: "#1A1F71", display: <span className="font-black italic text-lg tracking-tight text-white">VISA</span> },
-                { id: "MASTERCARD", label: "Mastercard",   bg: "#fff",    display: <span className="flex items-center gap-1"><span className="w-5 h-5 rounded-full bg-[#EB001B] -mr-2 inline-block"/><span className="w-5 h-5 rounded-full bg-[#F79E1B] inline-block opacity-90"/><span className="ml-2 text-xs font-bold text-slate-700">MC</span></span> },
-                { id: "INTOUCHPAY", label: "Mobile Money", bg: "#0A2240", display: <span className="font-black text-sm text-white">Mobile Money</span> },
-              ].map((method) => (
-                <button
-                  key={method.id}
-                  type="button"
-                  onClick={() => { setPaymentMethod(method.id); setPaymentError(false); }}
-                  className={`relative flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
-                    paymentMethod === method.id
-                      ? "border-[#2563EB] shadow-md bg-blue-50/50 dark:bg-blue-900/10 scale-[1.03]"
-                      : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                  }`}
-                >
-                  <div className="h-9 w-full rounded-lg flex items-center justify-center px-2" style={{ background: method.bg }}>
-                    {method.display}
-                  </div>
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">{method.label}</span>
-                  {paymentMethod === method.id && (
-                    <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#2563EB] flex items-center justify-center">
-                      <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 fill-white"><path d="M10 3L5 8.5 2 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-            {isMobileMoney && (
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1.5">
-                  {momoLabel} Phone <span className="text-red-500">*</span>
-                </label>
-                <input
-                  id="momo-phone"
-                  type="tel"
-                  value={momoPhone}
-                  onChange={(e) => setMomoPhone(e.target.value)}
-                  placeholder="e.g. +250 788 000 000"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB] text-sm"
-                  required
-                />
-                <p className="text-xs text-slate-400 mt-1.5">You will receive a prompt to confirm {formatCurrency(total)}.</p>
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50">
+              <div className="h-10 w-20 rounded-lg bg-[#059669] flex items-center justify-center flex-shrink-0">
+                <span className="font-black text-sm text-white">AfriPay</span>
               </div>
-            )}
-            {!isMobileMoney && paymentMethod && (
-              <p className="text-xs text-slate-400 mt-3 flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-emerald-500" /> Payment processed securely after confirmation.
-              </p>
-            )}
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Pay with AfriPay</p>
+                <p className="text-xs text-slate-500 mt-0.5">You will be redirected to AfriPay to complete your payment of <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(total)}</span>.</p>
+              </div>
+            </div>
           </div>
 
           {/* ── Place Order Button ─────────────────────────── */}

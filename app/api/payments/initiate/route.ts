@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import * as momo from "@/lib/payments/momo";
 import * as airtel from "@/lib/payments/airtel";
-import * as intouchpay from "@/lib/payments/intouchpay";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
@@ -30,32 +29,6 @@ export async function POST(req: NextRequest) {
       }
       await airtel.requestToPay({ amount, phone, referenceId, description });
       return NextResponse.json({ success: true, referenceId, method });
-    }
-
-    if (method === "INTOUCHPAY") {
-      if (!intouchpay.isConfigured()) {
-        return NextResponse.json({ error: "IntouchPay is not configured yet. Please contact the store." }, { status: 503 });
-      }
-      const requestTransactionId = `PY-${referenceId.replace(/-/g, "").slice(0, 16).toUpperCase()}`;
-      await prisma.paymentTransaction.create({
-        data: {
-          requestTransactionId,
-          type: "INCOMING",
-          amount: Number(amount),
-          phone: String(phone).replace(/\D/g, ""),
-          status: "Pending",
-          description,
-          orderId: orderId ?? null,
-        },
-      });
-      const result = await intouchpay.requestPayment({ amount, phone, requestTransactionId });
-      if (result.transactionid) {
-        await prisma.paymentTransaction.update({
-          where: { requestTransactionId },
-          data: { intouchTransactionId: String(result.transactionid) },
-        });
-      }
-      return NextResponse.json({ success: true, referenceId: requestTransactionId, method });
     }
 
     return NextResponse.json({ error: "Unsupported payment method" }, { status: 400 });
