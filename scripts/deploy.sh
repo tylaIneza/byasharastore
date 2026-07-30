@@ -26,13 +26,16 @@ npm install --production=false
 echo "▶ Generating Prisma client..."
 npx prisma generate
 
-echo "▶ Running database migrations..."
-npx prisma migrate deploy
+echo "▶ Syncing database schema..."
+npx prisma db push
 
 echo "▶ Building Next.js application..."
 npm run build
 
+echo "▶ Restarting app..."
+pm2 restart newgen-store
+
 echo ""
 echo "✅ Deployment complete!"
-echo "🌐 App running on port 3000"
+echo "🌐 App running on port 3020"
 echo ""
